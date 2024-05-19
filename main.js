@@ -98,130 +98,28 @@ Creep.prototype.remoteDropMiner = function () {
     }
 };
 
+function scoreDroppedResources(creep) {
+    let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
+    droppedResources.sort((a, b) => {
+        const distanceA = creep.pos.getRangeTo(a);
+        const distanceB = creep.pos.getRangeTo(b);
+        const amountA = a.amount;
+        const amountB = b.amount;
+
+        // Calculate a weighted score for each resource
+        const scoreA = amountA / distanceA;
+        const scoreB = amountB / distanceB;
+
+        // Sort in descending order of score
+        return scoreB - scoreA;
+    });
+}
+
 Creep.prototype.remoteHauler = function () {
-    //If creep is full, move to home room and transfer energy
-    if (this.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-        if (this.memory.home !== this.room.name) {
-            this.moveTo(new RoomPosition(25, 25, this.memory.home));
-            return;
-        }
-        let spawn = this.room.find(FIND_MY_SPAWNS)[0];
-        let extensions = this.room.find(FIND_MY_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-            }
-        });
-
-        // If the spawn is not full, transfer energy
-        if (spawn && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-            if (this.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                this.moveTo(spawn);
-            }
-            else if (extensions.length > 0) {
-                if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    this.moveTo(extensions[0]);
-                    return;
-                }
-
-            }
-        }
-        else {
-            let containers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_CONTAINER;
-                }
-            });
-            // remove any containers fuller than 90% energy
-            for (let i = 0; i < containers.length; i++) {
-                if (containers[i].store.getUsedCapacity(RESOURCE_ENERGY) > containers[i].store.getCapacity(RESOURCE_ENERGY) * .95) {
-                    containers.splice(i, 1);
-                    i--;
-                }
-            }
-            // Add spawnContainers to the containers array
-            let spawns = this.room.find(FIND_MY_SPAWNS);
-            let spawnContainers = [];
-            for (let i = 0; i < spawns.length; i++) {
-                let spawn = spawns[i];
-                spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
-                    filter: (structure) => {
-                        return structure.structureType == STRUCTURE_CONTAINER;
-                    }
-                }));
-            }
-            let extensions = this.room.find(FIND_MY_STRUCTURES, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                }
-            });
-            if (containers.length > 0) {
-                if (this.transfer(containers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    this.moveTo(containers[0]);
-                }
-            }
-            else if (extensions.length > 0) {
-                if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    this.moveTo(extensions[0]);
-                }
-            }
-            else {
-                let controllerContainers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
-                    filter: (structure) => {
-                        return structure.structureType == STRUCTURE_CONTAINER;
-                    }
-                });
-                // remove any containers fuller than 90% energy
-                for (let i = 0; i < controllerContainers.length; i++) {
-                    if (controllerContainers[i].store.getUsedCapacity(RESOURCE_ENERGY) > controllerContainers[i].store.getCapacity(RESOURCE_ENERGY) * .95) {
-                        controllerContainers.splice(i, 1);
-                        i--;
-                    }
-                }
-                controllerContainers.sort((a, b) => a.store.getUsedCapacity(RESOURCE_ENERGY) - b.store.getUsedCapacity(RESOURCE_ENERGY));
-                if (controllerContainers.length > 0) {
-                    if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        this.moveTo(controllerContainers[0]);
-                        return;
-                    }
-                }
-
-                // Move to spawn and drop resources
-                else if (this.pos.getRangeTo(spawn) > 1) {
-                    this.moveTo(spawn);
-                    return;
-                }
-                else if (this.pos.getRangeTo(spawn) == 1) {
-                    this.drop(RESOURCE_ENERGY);
-                }
-
-            }
-
-        }
-    }
-    // If creep is not full, move to source room and withdraw energy from containers or dropped resources
-    else if (this.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        if (this.memory.source.roomName !== this.room.name) {
-            this.moveTo(new RoomPosition(25, 25, this.memory.source.roomName));
-            return;
-        }
-        let containers = this.room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER;
-            }
-        });
-        let container = containers[0];
-        let droppedResources = this.room.find(FIND_DROPPED_RESOURCES);
-        // sort the dropped resources by path distance
-        droppedResources.sort((a, b) => this.pos.getRangeTo(a) - this.pos.getRangeTo(b));
-        if (droppedResources.length > 0) {
-            if (this.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
-                this.moveTo(droppedResources[0]);
-            }
-        }
-        else if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            this.moveTo(container);
-        }
-
+    if (creep.memory.state == undefined) {
+        creep.memory.state = 'harvesting';
+        const shovel = String.fromCodePoint(0x1FAA3);
+        console.log(shovel);
     }
 
 };
