@@ -112,7 +112,7 @@ StructureController.prototype.remoteMining = function () {
     // Output each source of sources, show id and room it's located in.
     for (let i = 0; i < sources.length; i++) {
     }
-    // Sort sorces by path length between home room controller and the remote source
+    // Sort sources by path length between home room controller and the remote source
     // Find all creeps with the role 'remoteDropMiner'
     let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteDropMiner');
     let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteHauler');
@@ -570,7 +570,7 @@ function minerCreep(creep) {
                 }
             }
 
-            // If there are less than terrianSpots - 1 creeps adjacent to the controller, move this creep to the controller
+            // If there are less than terrain Spots - 1 creeps adjacent to the controller, move this creep to the controller
             if (creepsAdjacent < terrainSpots) {
                 creep.moveTo(controller);
             }
