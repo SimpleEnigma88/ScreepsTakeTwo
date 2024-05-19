@@ -99,7 +99,7 @@ Creep.prototype.remoteDropMiner = function () {
 };
 
 Creep.prototype.remoteHauler = function () {
-    //If creep is full, move to home room and transfer energy to spawn
+    //If creep is full, move to home room and transfer energy
     if (this.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
         if (this.memory.home !== this.room.name) {
             this.moveTo(new RoomPosition(25, 25, this.memory.home));
@@ -112,7 +112,7 @@ Creep.prototype.remoteHauler = function () {
             }
         });
 
-        // If the spawn is not full, transfer energy to the spawn
+        // If the spawn is not full, transfer energy
         if (spawn && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
             if (this.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(spawn);
@@ -123,16 +123,6 @@ Creep.prototype.remoteHauler = function () {
                     return;
                 }
 
-            }
-            else {
-                if (this.pos.getRangeTo(this.room.controller) > 1) {
-                    this.moveTo(this.room.controller);
-                    return;
-                }
-                else {
-                    this.drop(RESOURCE_ENERGY);
-                    return;
-                }
             }
         }
         else {
@@ -147,6 +137,17 @@ Creep.prototype.remoteHauler = function () {
                     containers.splice(i, 1);
                     i--;
                 }
+            }
+            // Add spawnContainers to the containers array
+            let spawns = this.room.find(FIND_MY_SPAWNS);
+            let spawnContainers = [];
+            for (let i = 0; i < spawns.length; i++) {
+                let spawn = spawns[i];
+                spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
+                    filter: (structure) => {
+                        return structure.structureType == STRUCTURE_CONTAINER;
+                    }
+                }));
             }
             let extensions = this.room.find(FIND_MY_STRUCTURES, {
                 filter: (structure) => {
