@@ -169,6 +169,10 @@ Creep.prototype.remoteHauler = function () {
     }
 
     if (this.memory.state == 'hauling') {
+        if (this.room.name != this.memory.home) {
+            this.moveTo(new RoomPosition(25, 25, this.memory.home));
+            return;
+        }
         if (spawns.length > 0) {
             if (this.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(spawns[0]);
