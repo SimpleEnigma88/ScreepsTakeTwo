@@ -518,21 +518,21 @@ function dropCreep(creep) {
         }
     }
     // If the creep is not at the source, move it there
-    if (creep.room.name != creep.memory.source.roomName) {
-        let source = Game.getObjectById(creep.memory.sourceId);
-        if (source && source.roomName) {
+    let source = Game.getObjectById(creep.memory.sourceId);
+    if (source && creep.room.name != source.roomName) {
+        if (source.roomName) {
             creep.moveTo(new RoomPosition(25, 25, source.roomName));
             return;
         }
     }
-    else if (creep.pos.getRangeTo(creep.memory.source) > 1) {
-        creep.moveTo(creep.memory.source);
+    else if (source && creep.pos.getRangeTo(source) > 1) {
+        creep.moveTo(source);
         return;
     }
     // If the creep is at the source, mine it
     else {
-        if (creep.harvest(creep.memory.source) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(creep.memory.source);
+        if (source && creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source);
         }
     }
 
