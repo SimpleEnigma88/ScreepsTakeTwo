@@ -476,89 +476,11 @@ function minerCreep(creep) {
 }
 
 function dropCreep(creep) {
-    // If the creep is not home, take it there and return.
-    if (creep.room.name != creep.memory.home) {
-        creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
-        return;
-    }
-    // If the creep is not at the source, move it there
-    if (creep.memory.source == undefined) {
-        let sources = creep.room.find(FIND_SOURCES);
-        creep.memory.source = sources[0].id;
-    }
-    let source = Game.getObjectById(creep.memory.source.id);
-    if (creep.pos.getRangeTo(source) > 1) {
-        creep.moveTo(source);
-        return;
-    }
-    // If the creep is at the source, mine it
+    const source = creep.pos.findClosestByPath(FIND_SOURCES);
     if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source);
     }
 }
-
-// function dropCreep(creep) {
-//     // Find all sources in the room
-//     let sources = creep.room.find(FIND_SOURCES);
-
-//     // If this creep has no source, assign it to the source with the least number of assigned creeps
-//     if (creep.memory.source == undefined) {
-//         // Find all dropMiners in the room
-//         let dropMiners = creep.room.find(FIND_MY_CREEPS, {
-//             filter: (creep) => {
-//                 return creep.memory.role == 'dropMiner';
-//             }
-//         });
-
-//         // Count the number of creeps assigned to each source
-//         let sourceCounts = {};
-//         for (let dropMiner of dropMiners) {
-//             if (dropMiner.memory.source) {
-//                 let sourceId = dropMiner.memory.source.id;
-//                 if (sourceCounts[sourceId] == undefined) {
-//                     sourceCounts[sourceId] = 1;
-//                 } else {
-//                     sourceCounts[sourceId]++;
-//                 }
-//             }
-//         }
-
-//         // Find the source with the least number of assigned creeps
-//         let minCount = Infinity;
-//         let minSource = null;
-//         for (let source of sources) {
-//             let count = sourceCounts[source.id] || 0;
-//             if (count < minCount) {
-//                 minCount = count;
-//                 minSource = source;
-//             }
-//         }
-
-//         // Assign the creep to the source with the least number of assigned creeps
-//         if (minSource != null) {
-//             creep.memory.sourceId = minSource.id;
-//         }
-//     }
-//     // If the creep is not at the source, move it there
-//     let source = Game.getObjectById(creep.memory.sourceId);
-//     if (source && creep.room.name != source.roomName) {
-//         if (source.roomName) {
-//             creep.moveTo(new RoomPosition(25, 25, source.roomName));
-//             return;
-//         }
-//     }
-//     else if (source && creep.pos.getRangeTo(source) > 1) {
-//         creep.moveTo(source);
-//         return;
-//     }
-//     // If the creep is at the source, mine it
-//     else {
-//         if (source && creep.harvest(source) == ERR_NOT_IN_RANGE) {
-//             creep.moveTo(source);
-//         }
-//     }
-
-// }
 
 function haulerCreep(creep) {
 
