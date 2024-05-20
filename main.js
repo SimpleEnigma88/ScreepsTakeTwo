@@ -509,7 +509,7 @@ function dropCreep(creep) {
         }
         // Find the source with the fewest dropMiners assigned to it
         let minSource = sources[0];
-        let minCount = sourceCounts[minSource.id] || 0;
+        let minCount = sourceCounts[minSource.id];
         for (let i = 1; i < sources.length; i++) {
             let source = sources[i];
             if (sourceCounts[source.id] < minCount) {
