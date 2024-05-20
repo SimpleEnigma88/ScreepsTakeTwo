@@ -500,7 +500,7 @@ function dropCreep(creep) {
         let sourceCounts = {};
         for (let i = 0; i < dropMiners.length; i++) {
             let dropMiner = dropMiners[i];
-            if (sourceCounts[dropMiner.memory.source.id] == undefined) {
+            if (dropMiner.memory.source.id && sourceCounts[dropMiner.memory.source.id] == undefined) {
                 sourceCounts[dropMiner.memory.source.id] = 1;
             }
             else {
