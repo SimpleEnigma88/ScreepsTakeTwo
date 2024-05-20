@@ -507,7 +507,18 @@ function haulerCreep(creep) {
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
     droppedResources = droppedResources.filter(resource => resource.amount > 50);
     // sort the dropped resources by amount
-    droppedResources.sort((a, b) => b.amount - a.amount);
+    const weightAmount = 0.5; // weight for the amount of resources
+    const weightDistance = 4; // weight for the distance from the creep
+
+    droppedResources.sort((a, b) => {
+        const distanceToA = creep.pos.getRangeTo(a);
+        const distanceToB = creep.pos.getRangeTo(b);
+
+        const scoreA = weightAmount * a.amount - weightDistance * distanceToA;
+        const scoreB = weightAmount * b.amount - weightDistance * distanceToB;
+
+        return scoreB - scoreA; // sort in descending order of score
+    });
     let tombstones = creep.room.find(FIND_TOMBSTONES);
     tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
     tombstones.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
