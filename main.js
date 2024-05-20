@@ -155,12 +155,16 @@ Creep.prototype.remoteHauler = function () {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    let controllerContainers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-        }
-    });
-
+    if (this.room.controller) {
+        let controllerContainers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            }
+        });
+    }
+    else {
+        let controllerContainers = [];
+    }
     if (this.memory.state == 'loading') {
         if (this.room.name != this.memory.source.roomName) {
             this.moveTo(new RoomPosition(25, 25, this.memory.source.roomName));
