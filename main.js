@@ -476,9 +476,65 @@ function minerCreep(creep) {
 }
 
 function dropCreep(creep) {
-    const source = creep.pos.findClosestByPath(FIND_SOURCES);
-    if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source);
+    // Find all sources in the room
+    let sources = creep.room.find(FIND_SOURCES);
+    // Find all containers within range 1 of the sources
+    let sourceContainers = [];
+    for (let i = 0; i < sources.length; i++) {
+        let source = sources[i];
+        sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            }
+        }));
+    }
+    // If this creep has no source, assign it to the first source
+    if (creep.memory.source == undefined) {
+        // Find all dropMiners in the room
+        let dropMiners = creep.room.find(FIND_MY_CREEPS, {
+            filter: (creep) => {
+                return creep.memory.role == 'dropMiner';
+            }
+        });
+        // Check how many are assigned to each source
+        let sourceCounts = {};
+        for (let i = 0; i < dropMiners.length; i++) {
+            let dropMiner = dropMiners[i];
+            if (sourceCounts[dropMiner.memory.source.id] == undefined) {
+                sourceCounts[dropMiner.memory.source.id] = 1;
+            }
+            else {
+                sourceCounts[dropMiner.memory.source.id]++;
+            }
+        }
+        // Find the source with the fewest dropMiners assigned to it
+        let minSource = sources[0];
+        let minCount = sourceCounts[minSource.id] || 0;
+        for (let i = 1; i < sources.length; i++) {
+            let source = sources[i];
+            if (sourceCounts[source.id] < minCount) {
+                minCount = sourceCounts[source.id];
+                minSource = source;
+            }
+        }
+        creep.memory.source = minSource;
+    }
+    else {
+        // If the creep is not at the source, move it there
+        if (creep.room.name != creep.memory.source.roomName) {
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.source.roomName));
+            return;
+        }
+        else if (creep.pos.getRangeTo(creep.memory.source) > 1) {
+            creep.moveTo(creep.memory.source);
+            return;
+        }
+        // If the creep is at the source, mine it
+        else {
+            if (creep.harvest(creep.memory.source) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.memory.source);
+            }
+        }
     }
 }
 
