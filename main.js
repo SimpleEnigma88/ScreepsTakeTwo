@@ -558,8 +558,9 @@ function haulerCreep(creep) {
         }
     }
 
-    console.log('hauling' + spawns.length + extensions.length + controllerContainers.length);
+    console.log('before hauling' + spawns.length + extensions.length + controllerContainers.length);
     if (creep.memory.state == 'hauling') {
+        console.log('hauling' + spawns.length + extensions.length + controllerContainers.length);
 
         if (spawns.length > 0) {
             console.log('spawns');
