@@ -13,7 +13,7 @@ StructureController.prototype.remoteMining = function () {
     }
     // Remove sources that are more than 1 room away
     for (let i = 0; i < sources.length; i++) {
-        if (Game.map.findRoute(this.room.name, sources[i].pos.roomName).length >= 3) {
+        if (Game.map.findRoute(this.room.name, sources[i].pos.roomName).length >= 4) {
             sources.splice(i, 1);
             i--;
         }
@@ -78,7 +78,7 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteDropMiner', source: source.pos, home: this.room.name } });
             break;
         }
-        else if (haulersForSource.length < 4 && this.room.energyAvailable >= 300) {
+        else if (haulersForSource.length < 5 && this.room.energyAvailable >= 300) {
             let body = [MOVE, CARRY, MOVE, CARRY];
             if (this && this.my) {
                 let cost = 100;
