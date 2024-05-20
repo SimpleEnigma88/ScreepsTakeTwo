@@ -196,14 +196,10 @@ Creep.prototype.remoteHauler = function () {
                 this.moveTo(controllerContainers[0]);
             }
         }
-        // If there are no spawns, extensions, or controller containers, move to a spawn and drop the energy
+        // Move to a spawn and drop the energy
         else {
-            if (this.pos.getRangeTo(spawns[0]) > 1) {
-                this.moveTo(spawns[0]);
-            }
-            else {
-                this.drop(RESOURCE_ENERGY);
-            }
+            console.log('No valid targets for hauling');
+            console.log('Spawns: ' + spawns.length);
         }
     }
 
