@@ -186,11 +186,11 @@ Creep.prototype.remoteHauler = function () {
                 this.moveTo(spawns[0]);
             }
         }
-        // else if (extensions.length > 0) {
-        //     if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        //         this.moveTo(extensions[0]);
-        //     }
-        // }
+        else if (extensions.length > 0) {
+            if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                this.moveTo(extensions[0]);
+            }
+        }
         else if (controllerContainers.length > 0) {
             if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(controllerContainers[0]);
