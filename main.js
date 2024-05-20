@@ -153,11 +153,11 @@ Creep.prototype.remoteHauler = function () {
         }
     });
 
-    let controllerContainers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
+    let controllerContainers = this.room.controller ? this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
-    });
+    }) : [];
 
     if (this.memory.state == 'loading') {
         if (this.room.name != this.memory.source.roomName) {
