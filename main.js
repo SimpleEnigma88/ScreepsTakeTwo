@@ -508,7 +508,7 @@ function haulerCreep(creep) {
     // Find all sources for depositing energy in the room
     let spawns = creep.room.find(FIND_MY_SPAWNS);
     // Remove if full
-    spawns = spawns.filter(spawn => spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+    spawns = spawns.filter(spawn => spawn.store.getFreeCapacity() > 0);
 
     let extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
