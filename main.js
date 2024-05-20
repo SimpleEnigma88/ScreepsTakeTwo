@@ -549,16 +549,19 @@ function haulerCreep(creep) {
         if (droppedResources.length > 0) {
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(droppedResources[0]);
+                return;
             }
         }
         if (tombstones.length > 0) {
             if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(tombstones[0]);
+                return;
             }
         }
         if (sourceContainers.length > 0) {
             if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceContainers[0]);
+                return;
             }
         }
     }
@@ -575,16 +578,19 @@ function haulerCreep(creep) {
         if (spawns.length > 0) {
             if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawns[0]);
+                return;
             }
         }
-        else if (controllerContainers.length > 0) {
+        if (controllerContainers.length > 0) {
             if (creep.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(controllerContainers[0]);
+                return;
             }
         }
-        else if (spawnContainers.length > 0) {
+        if (spawnContainers.length > 0) {
             if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
+                return;
             }
         }
     }
