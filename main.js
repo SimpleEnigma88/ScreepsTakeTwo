@@ -506,7 +506,8 @@ function haulerCreep(creep) {
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
     droppedResources = droppedResources.filter(resource => resource.amount > 50);
-    droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+    // sort the dropped resources by amount
+    droppedResources.sort((a, b) => b.amount - a.amount);
     let tombstones = creep.room.find(FIND_TOMBSTONES);
     tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
     tombstones.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
@@ -537,7 +538,6 @@ function haulerCreep(creep) {
     if (creep.memory.state == 'loading') {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'hauling';
-            return;
         }
         if (droppedResources.length > 0) {
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
@@ -558,7 +558,6 @@ function haulerCreep(creep) {
     if (creep.memory.state == 'hauling') {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
-            return;
         }
         // Combine spawns and extensions so the closest gets filled.
         spawns = spawns.concat(extensions);
