@@ -859,7 +859,7 @@ module.exports.loop = function () {
             dropMiners.length < accessPoints &&
             spawns.length > 0 &&
             miners.length > dropMiners.length &&
-            dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] &&
+            dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1 &&
             room.energyAvailable >= room.energyCapacityAvailable * 0.75) {
             var newName = 'DropMiner - ' + Game.time;
             spawns[0].spawnCreep(body, newName,
