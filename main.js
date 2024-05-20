@@ -119,6 +119,8 @@ function scoreDroppedResources(creep) {
 Creep.prototype.remoteHauler = function () {
     if (this.memory.state == undefined) {
         this.memory.state = 'loading';
+        const shovel = String.fromCodePoint(0x1FAA3);
+        console.log(shovel);
     }
 
     if (this.memory.state == 'loading') {
@@ -133,6 +135,7 @@ Creep.prototype.remoteHauler = function () {
     }
 
     let droppedResources = scoreDroppedResources(this);
+    console.log(droppedResources);
 
     let containers = this.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
@@ -194,15 +197,6 @@ Creep.prototype.remoteHauler = function () {
         else if (controllerContainers.length > 0) {
             if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(controllerContainers[0]);
-            }
-        }
-        // If there are no spawns, extensions, or controller containers, move to a spawn and drop the energy
-        else {
-            if (this.pos.getRangeTo(spawns[0]) > 1) {
-                this.moveTo(spawns[0]);
-            }
-            else {
-                this.drop(RESOURCE_ENERGY);
             }
         }
     }
