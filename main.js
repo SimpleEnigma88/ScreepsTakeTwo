@@ -113,6 +113,7 @@ function scoreDroppedResources(creep) {
         // Sort in descending order of score
         return scoreB - scoreA;
     });
+    return droppedResources;
 }
 
 Creep.prototype.remoteHauler = function () {
