@@ -716,7 +716,7 @@ function placeExtensions(spawn) {
 const NUM_CREEPS = {
 
     'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
-    'miner': [15, 15, 15, 6, 6, 5, 4, 4],
+    'miner': [15, 15, 10, 6, 6, 5, 4, 4],
     'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
     'builder': [5, 5, 5, 5, 5, 5, 5, 5]
 };
