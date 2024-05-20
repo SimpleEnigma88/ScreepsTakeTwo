@@ -557,6 +557,8 @@ function haulerCreep(creep) {
     }
     if (creep.memory.state == 'hauling') {
         // Find all controller containers in the room
+        spawns = spawns.concat(extensions);
+        console.log(spawns);
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
