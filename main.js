@@ -125,6 +125,7 @@ Creep.prototype.remoteHauler = function () {
     this.memory.state = this.store[RESOURCE_ENERGY] > 0 ? 'loading' : 'hauling';
 
     let droppedResources = scoreDroppedResources(this);
+    console.log(droppedResources);
 
     let containers = this.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
