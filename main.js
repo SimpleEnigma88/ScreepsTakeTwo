@@ -479,15 +479,14 @@ function dropCreep(creep) {
     }
 }
 
-// Function to run a hauler creep
 function haulerCreep(creep) {
-    // Find all spawns in the room
+
     let spawns = creep.room.find(FIND_MY_SPAWNS, {
         filter: (structure) => {
             return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    // Find all spawn containers in range 1 of the spawns
+
     let spawnContainers = [];
     for (let i = 0; i < spawns.length; i++) {
         let spawn = spawns[i];
@@ -497,34 +496,27 @@ function haulerCreep(creep) {
             }
         }));
     }
-    // Find all extensions in the room
+    
     let extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    // Find all dropped resources in the room
+    
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    // Sort the dropped resources by path distance
     droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-    // Filter out amounts less than .5 of creep capacity
     droppedResources = droppedResources.filter(resource => resource.amount > 50);
-    // Find all tombstones in the room
     let tombstones = creep.room.find(FIND_TOMBSTONES);
-    // Filter out the ones with small amounts
     tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-    // Find all containers in range 1 of the sources in the room
     let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50;
         }
     });
-    // If any spawns or extensions in the room need energy, add the spawn container to the containers array
     if (spawns.length > 0 || extensions.length > 0) {
         containers = containers.concat(spawnContainers);
     }
 
-    // If the creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
         return;
@@ -564,14 +556,14 @@ function haulerCreep(creep) {
             creep.memory.state = 'loading';
             return;
         }
-        if (spawns.length > 0) {
-            if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(spawns[0]);
-            }
-        }
-        else if (extensions.length > 0) {
+        if (extensions.length > 0) {
             if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(extensions[0]);
+            }
+        }
+        else if (spawns.length > 0) {
+            if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawns[0]);
             }
         }
         else if (controllerContainers.length > 0) {
