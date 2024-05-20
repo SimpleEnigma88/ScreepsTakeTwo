@@ -198,8 +198,6 @@ Creep.prototype.remoteHauler = function () {
         }
         // Move to a spawn and drop the energy
         else {
-            console.log('No valid targets for hauling');
-            console.log('Spawns: ' + spawns.length);
         }
     }
 
@@ -567,7 +565,6 @@ function haulerCreep(creep) {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
-        console.log(spawns);
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
@@ -800,7 +797,6 @@ module.exports.loop = function () {
             // Calculate the percentage of actively spawning ticks
             let activelySpawningTicks = spawns[i].memory.spawningTicks.reduce((a, b) => a + b, 0);
             let percentageActivelySpawning = activelySpawningTicks / spawns[i].memory.spawningTicks.length * 100;
-            // console.log(`Spawn ${spawns[i].name} was actively spawning ${percentageActivelySpawning.toFixed(2)}% of the time over the last ${spawns[i].memory.energy.length} / 1500 ticks.`);
             // Room visual to show the percentage of time the spawn was actively spawning, just ##%
             room.visual.text(`${percentageActivelySpawning.toFixed(2)}%`, spawns[i].pos.x, spawns[i].pos.y + 2, { align: 'center', color: 'white' });
             // If age is not save to spawn memory, save the current tick.
@@ -896,27 +892,19 @@ module.exports.loop = function () {
                 delete Memory.creeps[name];
             }
         }
-        // Count number of creeps with the role 'miner'
-        // Count number of creeps with the role 'upgrader'
-        let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
-        // console.log('1CPU used so far: ' + Game.cpu.getUsed());
         for (let creepName in Game.creeps) {
             let creep = Game.creeps[creepName];
             if (creep.memory.role == 'scout') {
                 exploreAdjacentRooms(creep);
-                // console.log(creep.name + ": " + Game.cpu.getUsed() + "CPU used so far");
             }
             if (creep.memory.role == 'miner') {
                 minerCreep(creep);
-                // console.log(creep.name + ": " + Game.cpu.getUsed() + "CPU used so far");
             }
             if (creep.memory.role == 'dropMiner') {
                 dropCreep(creep);
-                // console.log(creep.name + ": " + Game.cpu.getUsed() + "CPU used so far");
             }
             if (creep.memory.role == 'hauler') {
                 haulerCreep(creep);
-                // console.log(creep.name + ": " + Game.cpu.getUsed() + "CPU used so far");
             }
             if (creep.memory.role == 'remoteDropMiner') {
                 creep.remoteDropMiner();
@@ -925,7 +913,6 @@ module.exports.loop = function () {
                 creep.remoteHauler();
             }
         }
-        // console.log('2CPU used so far: ' + Game.cpu.getUsed());
 
     };
 };
