@@ -573,12 +573,6 @@ function haulerCreep(creep) {
                 creep.moveTo(spawns[0]);
             }
         }
-
-        else if (extensions.length > 0) {
-            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(extensions[0]);
-            }
-        }
         else if (controllerContainers.length > 0) {
             if (creep.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(controllerContainers[0]);
