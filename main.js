@@ -496,23 +496,33 @@ function haulerCreep(creep) {
             }
         }));
     }
-    
+
     let extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    
+    extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     droppedResources = droppedResources.filter(resource => resource.amount > 50);
+    droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     let tombstones = creep.room.find(FIND_TOMBSTONES);
     tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-    let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50;
-        }
-    });
+    tombstones.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+    // Find all sources
+    let sources = creep.room.find(FIND_SOURCES);
+    // Find all containers within range 1 of the sources
+    let sourceContainers = [];
+    for (let i = 0; i < sources.length; i++) {
+        let source = sources[i];
+        sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+            }
+        }));
+    }
+
     if (spawns.length > 0 || extensions.length > 0) {
         containers = containers.concat(spawnContainers);
     }
@@ -539,7 +549,7 @@ function haulerCreep(creep) {
                 creep.moveTo(tombstones[0]);
             }
         }
-        if (containers.length > 0) {
+        if (sourceContainers.length > 0) {
             if (creep.withdraw(containers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(containers[0]);
             }
