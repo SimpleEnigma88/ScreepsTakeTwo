@@ -524,7 +524,7 @@ function haulerCreep(creep) {
     }
 
     if (spawns.length > 0 || extensions.length > 0) {
-        containers = containers.concat(spawnContainers);
+        sourceContainers = sourceContainers.concat(spawnContainers);
     }
 
     if (creep.room.name != creep.memory.home) {
@@ -550,8 +550,8 @@ function haulerCreep(creep) {
             }
         }
         if (sourceContainers.length > 0) {
-            if (creep.withdraw(containers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(containers[0]);
+            if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sourceContainers[0]);
             }
         }
     }
