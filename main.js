@@ -482,6 +482,21 @@ function dropCreep(creep) {
     }
 }
 
+function claimCreep(creep) {
+    // If not in source room, move to source room
+    if (creep.room.name != creep.memory.source.roomName) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.source.roomName));
+        return;
+    }
+    // If not at the controller, move to the controller
+    if (creep.pos.getRangeTo(creep.room.controller) > 1) {
+        creep.moveTo(creep.room.controller);
+        return;
+    }
+    // Claim the controller
+    creep.claimController(creep.room.controller);
+}
+
 function haulerCreep(creep) {
 
     let spawns = creep.room.find(FIND_MY_SPAWNS, {
@@ -921,6 +936,9 @@ module.exports.loop = function () {
             }
             if (creep.memory.role == 'remoteHauler') {
                 creep.remoteHauler();
+            }
+            if (creep.memory.role == 'claimer') {
+                claimCreep(creep);
             }
         }
 
