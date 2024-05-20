@@ -725,7 +725,8 @@ const NUM_CREEPS = {
     'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
     'miner': [15, 15, 10, 6, 6, 5, 4, 4],
     'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
-    'builder': [5, 5, 5, 5, 5, 5, 5, 5]
+    'builder': [5, 5, 5, 5, 5, 5, 5, 5],
+    'dropMiner': [3, 3, 3, 2, 1, 1, 1, 1],
 };
 
 function displayEnergy(obj) {
@@ -857,7 +858,9 @@ module.exports.loop = function () {
             Game.rooms[roomName].controller.my &&
             dropMiners.length < accessPoints &&
             spawns.length > 0 &&
-            miners.length > dropMiners.length) {
+            miners.length > dropMiners.length &&
+            dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] &&
+            room.energyAvailable >= room.energyCapacityAvailable * 0.75) {
             var newName = 'DropMiner - ' + Game.time;
             spawns[0].spawnCreep(body, newName,
                 { memory: { role: 'dropMiner', home: roomName } });
