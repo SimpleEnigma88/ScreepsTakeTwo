@@ -163,7 +163,7 @@ Creep.prototype.remoteHauler = function () {
 
     if (this.memory.state == 'loading') {
         if (this.room.name != this.memory.source.roomName) {
-            this.moveTo(new RoomPosition(25, 25, this.memory.home));
+            this.moveTo(new RoomPosition(25, 25, this.memory.source.roomName));
             return;
         }
         if (droppedResources.length > 0) {
