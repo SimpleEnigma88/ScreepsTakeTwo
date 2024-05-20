@@ -481,84 +481,89 @@ function dropCreep(creep) {
 
 // Function to run a hauler creep
 function haulerCreep(creep) {
-    if (creep.memory.state == undefined) {
-        creep.memory.state = 'loading';
-    }
-
-    if (creep.memory.state == 'loading') {
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == creep.store.getCapacity(RESOURCE_ENERGY)) {
-            creep.memory.state = 'hauling';
-        }
-    }
-    if (creep.memory.state == 'hauling') {
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
-            creep.memory.state = 'loading';
-        }
-    }
-
-    let droppedResources = scoreDroppedResources(creep);
-
-    let containers = creep.room.find(FIND_STRUCTURES, {
+    // Find all spawns in the room
+    let spawns = creep.room.find(FIND_MY_SPAWNS, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+            return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    containers.sort((a, b) => a.store.getUsedCapacity(RESOURCE_ENERGY) - b.store.getUsedCapacity(RESOURCE_ENERGY));
-
-    // Find all sources for depositing energy in the room
-    let spawns = creep.room.find(FIND_MY_SPAWNS);
-    // Remove if full
-    spawns = spawns.filter(spawn => spawn.store.getFreeCapacity() > 0);
-
+    // Find all spawn containers in range 1 of the spawns
+    let spawnContainers = [];
+    for (let i = 0; i < spawns.length; i++) {
+        let spawn = spawns[i];
+        spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
+            }
+        }));
+    }
+    // Find all extensions in the room
     let extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-
-    let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
+    // Find all dropped resources in the room
+    let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
+    // Sort the dropped resources by path distance
+    droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+    // Filter out amounts less than .5 of creep capacity
+    droppedResources = droppedResources.filter(resource => resource.amount > 50);
+    // Find all tombstones in the room
+    let tombstones = creep.room.find(FIND_TOMBSTONES);
+    // Filter out the ones with small amounts
+    tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
+    // Find all containers in range 1 of the sources in the room
+    let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50;
         }
-    }) : [];
-    console.log('controllerContainers' + controllerContainers.length);
-
-    // If any need energy, then containers near sources and spawns are withdrawable
-    let drawContainers = [];
+    });
+    // If any spawns or extensions in the room need energy, add the spawn container to the containers array
     if (spawns.length > 0 || extensions.length > 0) {
-        drawContainers = creep.room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-            }
-        });
-        drawContainers.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-    }
-    else {
-        drawContainers = creep.room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-            }
-        });
-        //Remove containers near spawns and controller
-        drawContainers = drawContainers.filter(container => container.pos.getRangeTo(spawns[0]) > 1 && container.pos.getRangeTo(creep.room.controller) > 2);
-
-        drawContainers.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+        containers = containers.concat(spawnContainers);
     }
 
+    // If the creep is not home, take it there and return.
+    if (creep.room.name != creep.memory.home) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        return;
+    }
+    if (creep.memory.state == undefined) {
+        creep.memory.state = 'loading';
+    }
     if (creep.memory.state == 'loading') {
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+            creep.memory.state = 'hauling';
+            return;
+        }
         if (droppedResources.length > 0) {
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(droppedResources[0]);
             }
         }
-        else if (drawContainers.length > 0) {
-            if (creep.withdraw(drawContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(drawContainers[0]);
+        if (tombstones.length > 0) {
+            if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(tombstones[0]);
+            }
+        }
+        if (containers.length > 0) {
+            if (creep.withdraw(containers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(containers[0]);
             }
         }
     }
-
     if (creep.memory.state == 'hauling') {
+        // Find all controller containers in the room
+        let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
+            }
+        }) : [];
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+            creep.memory.state = 'loading';
+            return;
+        }
         if (spawns.length > 0) {
             if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawns[0]);
@@ -574,7 +579,11 @@ function haulerCreep(creep) {
                 creep.moveTo(controllerContainers[0]);
             }
         }
-        // If there are no spawns, extensions, or controller containers, move to a spawn and drop the energy
+        else if (spawnContainers.length > 0) {
+            if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawnContainers[0]);
+            }
+        }
         else {
             if (creep.pos.getRangeTo(spawns[0]) > 1) {
                 creep.moveTo(spawns[0]);
@@ -584,6 +593,7 @@ function haulerCreep(creep) {
             }
         }
     }
+
 
 }
 
