@@ -502,7 +502,7 @@ function haulerCreep(creep) {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    extensions.sort((a, b) => creep.pos.getRangeTo(b) - creep.pos.getRangeTo(a));
+    extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
     droppedResources = droppedResources.filter(resource => resource.amount > 50);
