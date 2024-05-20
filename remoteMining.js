@@ -93,11 +93,11 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
             break;
         }
-        // if (claimersForSource.length < 1 && this.room.energyAvailable > 750) {
-        //     let newName = 'Claimer - ' + Game.time;
-        //     this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
-        //         { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
-        // }
+        if (claimersForSource.length < 1 && this.room.energyAvailable > 750) {
+            let newName = 'Claimer - ' + Game.time;
+            this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
+                { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
+        }
     }
 };
 module.exports = StructureController.prototype.remoteMining;
