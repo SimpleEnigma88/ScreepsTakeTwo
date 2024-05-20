@@ -570,9 +570,7 @@ function haulerCreep(creep) {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
-        // Combine spawns and extensions so the closest gets filled.
-        spawns = spawns.concat(extensions);
-        spawns.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+        console.log(spawns);
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
@@ -591,14 +589,6 @@ function haulerCreep(creep) {
         else if (spawnContainers.length > 0) {
             if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
-            }
-        }
-        else {
-            if (creep.pos.getRangeTo(spawns[0]) > 1) {
-                creep.moveTo(spawns[0]);
-            }
-            else {
-                creep.drop(RESOURCE_ENERGY);
             }
         }
     }
