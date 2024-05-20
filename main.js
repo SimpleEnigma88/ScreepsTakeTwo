@@ -119,8 +119,6 @@ function scoreDroppedResources(creep) {
 Creep.prototype.remoteHauler = function () {
     if (this.memory.state == undefined) {
         this.memory.state = 'loading';
-        const shovel = String.fromCodePoint(0x1FAA3);
-        console.log(shovel);
     }
 
     if (this.memory.state == 'loading') {
@@ -135,7 +133,6 @@ Creep.prototype.remoteHauler = function () {
     }
 
     let droppedResources = scoreDroppedResources(this);
-    console.log(droppedResources);
 
     let containers = this.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
