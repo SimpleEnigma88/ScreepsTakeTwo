@@ -522,6 +522,7 @@ function haulerCreep(creep) {
             return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     }) : [];
+    console.log('controllerContainers' + controllerContainers.length);
 
     // If any need energy, then containers near sources and spawns are withdrawable
     let drawContainers = [];
