@@ -506,11 +506,10 @@ function haulerCreep(creep) {
     containers.sort((a, b) => a.store.getUsedCapacity(RESOURCE_ENERGY) - b.store.getUsedCapacity(RESOURCE_ENERGY));
 
     // Find all sources for depositing energy in the room
-    let spawns = creep.room.find(FIND_MY_SPAWNS, {
-        filter: (structure) => {
-            return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-        }
-    });
+    let spawns = creep.room.find(FIND_MY_SPAWNS);
+    // Remove if full
+    spawns = spawns.filter(spawn => spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+
     let extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
