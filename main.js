@@ -860,7 +860,7 @@ module.exports.loop = function () {
             spawns[0].spawnCreep(body, newName,
                 { memory: { role: 'dropMiner', home: roomName } });
         }
-        else if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0) {
+        else if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0 && room.energyAvailable >= room.energyCapacityAvailable) {
             body = [MOVE, MOVE, CARRY, WORK];
             if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
                 let cost = 250;
