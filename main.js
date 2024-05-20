@@ -292,6 +292,8 @@ function minerCreep(creep) {
     // filter out amounts less than .5 of creep capacity
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .5);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+    // Sort by percentage complete, those closest to completion first
+    constructionSites.sort((a, b) => a.progress / a.progressTotal - b.progress / b.progressTotal);
 
     // A creep can have multiple states, mining, filling, building, upgrading, etc.
     // The state is stored in the creep's memory
