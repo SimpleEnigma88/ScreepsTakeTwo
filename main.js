@@ -580,8 +580,8 @@ function haulerCreep(creep) {
             }
         }
         if (extensions.length > 0) {
-            if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                this.moveTo(extensions[0]);
+            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(extensions[0]);
                 return;
             }
         }
