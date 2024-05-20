@@ -123,7 +123,16 @@ Creep.prototype.remoteHauler = function () {
         console.log(shovel);
     }
 
-    this.memory.state = this.store[RESOURCE_ENERGY] > 0 ? 'loading' : 'hauling';
+    if (this.memory.state == 'loading') {
+        if (this.store[RESOURCE_ENERGY] == this.store.getCapacity()) {
+            this.memory.state = 'hauling';
+        }
+    }
+    if (this.memory.state == 'hauling') {
+        if (this.store[RESOURCE_ENERGY] == 0) {
+            this.memory.state = 'loading';
+        }
+    }
 
     let droppedResources = scoreDroppedResources(this);
     console.log(droppedResources);
