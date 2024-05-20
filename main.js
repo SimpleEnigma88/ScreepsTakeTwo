@@ -123,16 +123,7 @@ Creep.prototype.remoteHauler = function () {
         console.log(shovel);
     }
 
-    if (this.memory.state == 'loading') {
-        if (this.store[RESOURCE_ENERGY] == this.store.getCapacity()) {
-            this.memory.state = 'hauling';
-        }
-    }
-    if (this.memory.state == 'hauling') {
-        if (this.store[RESOURCE_ENERGY] == 0) {
-            this.memory.state = 'loading';
-        }
-    }
+    this.memory.state = this.store[RESOURCE_ENERGY] > 0 ? 'loading' : 'hauling';
 
     let droppedResources = scoreDroppedResources(this);
     console.log(droppedResources);
@@ -155,7 +146,6 @@ Creep.prototype.remoteHauler = function () {
             return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-
     let controllerContainers = this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
@@ -164,7 +154,7 @@ Creep.prototype.remoteHauler = function () {
 
     if (this.memory.state == 'loading') {
         if (this.room.name != this.memory.source.roomName) {
-            this.moveTo(new RoomPosition(25, 25, this.memory.source.roomName));
+            this.moveTo(new RoomPosition(25, 25, this.memory.home));
             return;
         }
         if (droppedResources.length > 0) {
