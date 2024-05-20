@@ -546,10 +546,6 @@ function haulerCreep(creep) {
     }
 
     if (creep.memory.state == 'loading') {
-        if (creep.room.name != creep.memory.home) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
-            return;
-        }
         if (droppedResources.length > 0) {
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(droppedResources[0]);
