@@ -486,12 +486,12 @@ function haulerCreep(creep) {
     }
 
     if (creep.memory.state == 'loading') {
-        if (creep.store[RESOURCE_ENERGY] == creep.store.getCapacity()) {
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == creep.store.getCapacity(RESOURCE_ENERGY)) {
             creep.memory.state = 'hauling';
         }
     }
     if (creep.memory.state == 'hauling') {
-        if (creep.store[RESOURCE_ENERGY] == 0) {
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
     }
@@ -558,12 +558,8 @@ function haulerCreep(creep) {
         }
     }
 
-    console.log('before hauling' + spawns.length + extensions.length + controllerContainers.length);
     if (creep.memory.state == 'hauling') {
-        console.log('hauling' + spawns.length + extensions.length + controllerContainers.length);
-
         if (spawns.length > 0) {
-            console.log('spawns');
             if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawns[0]);
             }
