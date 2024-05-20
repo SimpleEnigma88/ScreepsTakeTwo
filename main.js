@@ -556,6 +556,10 @@ function haulerCreep(creep) {
         }
     }
     if (creep.memory.state == 'hauling') {
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+            creep.memory.state = 'loading';
+            return;
+        }
         // Combine spawns and extensions so the closest gets filled.
         spawns = spawns.concat(extensions);
         spawns.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
@@ -564,18 +568,15 @@ function haulerCreep(creep) {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
             }
         }) : [];
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
-            creep.memory.state = 'loading';
-            return;
-        }
-        if (extensions.length > 0) {
-            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(extensions[0]);
-            }
-        }
-        else if (spawns.length > 0) {
+        if (spawns.length > 0) {
             if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawns[0]);
+            }
+        }
+
+        else if (extensions.length > 0) {
+            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(extensions[0]);
             }
         }
         else if (controllerContainers.length > 0) {
@@ -597,8 +598,6 @@ function haulerCreep(creep) {
             }
         }
     }
-
-
 }
 
 
