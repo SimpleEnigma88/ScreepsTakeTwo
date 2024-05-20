@@ -535,10 +535,6 @@ function haulerCreep(creep) {
         }));
     }
 
-    if (spawns.length > 0 || extensions.length > 0) {
-        sourceContainers = sourceContainers.concat(spawnContainers);
-    }
-
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
         return;
