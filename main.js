@@ -484,9 +484,9 @@ function dropCreep(creep) {
     // If the creep is not at the source, move it there
     if (creep.memory.source == undefined) {
         let sources = creep.room.find(FIND_SOURCES);
-        creep.memory.source = sources[0];
+        creep.memory.source = sources[0].id;
     }
-    let source = creep.memory.source;
+    let source = Game.getObjectById(creep.memory.source.id);
     if (creep.pos.getRangeTo(source) > 1) {
         creep.moveTo(source);
         return;
