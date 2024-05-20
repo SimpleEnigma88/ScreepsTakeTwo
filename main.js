@@ -894,7 +894,12 @@ module.exports.loop = function () {
         if (room.controller && room.controller.my) {
             //room.controller.remoteMining();
         }
-
+        // Remove dead creeps from memory
+        for (let name in Memory.creeps) {
+            if (!Game.creeps[name]) {
+                delete Memory.creeps[name];
+            }
+        }
         // Count number of creeps with the role 'miner'
         // Count number of creeps with the role 'upgrader'
         let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
@@ -925,11 +930,6 @@ module.exports.loop = function () {
             }
         }
         // console.log('2CPU used so far: ' + Game.cpu.getUsed());
-        // Remove dead creeps from memory
-        for (let name in Memory.creeps) {
-            if (!Game.creeps[name]) {
-                delete Memory.creeps[name];
-            }
-        }
+
     };
-}; // Add this closing curly brace
+};
