@@ -558,9 +558,9 @@ function haulerCreep(creep) {
         }
     }
 
+    console.log('hauling' + spawns.length + extensions.length + controllerContainers.length);
     if (creep.memory.state == 'hauling') {
 
-        console.log('hauling' + spawns.length + extensions.length + controllerContainers.length);
         if (spawns.length > 0) {
             console.log('spawns');
             if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
