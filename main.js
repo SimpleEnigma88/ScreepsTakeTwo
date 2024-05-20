@@ -490,7 +490,7 @@ function haulerCreep(creep) {
             creep.memory.state = 'hauling';
         }
     }
-    if (creep.memory.state == 'hauling') {
+    else if (creep.memory.state == 'hauling') {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
