@@ -514,13 +514,16 @@ function dropCreep(creep) {
 
         // Assign the creep to the source with the least number of assigned creeps
         if (minSource != null) {
-            creep.memory.source = minSource;
+            creep.memory.sourceId = minSource.id;
         }
     }
     // If the creep is not at the source, move it there
     if (creep.room.name != creep.memory.source.roomName) {
-        creep.moveTo(new RoomPosition(25, 25, creep.memory.source.roomName));
-        return;
+        let source = Game.getObjectById(creep.memory.sourceId);
+        if (source && source.roomName) {
+            creep.moveTo(new RoomPosition(25, 25, source.roomName));
+            return;
+        }
     }
     else if (creep.pos.getRangeTo(creep.memory.source) > 1) {
         creep.moveTo(creep.memory.source);
