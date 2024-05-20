@@ -389,6 +389,15 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'building') {
         repairOnTheFly(creep);
+        let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER;
+            }
+        });
+        // If there are containers, withdraw energy from them
+        if (containers.length > 0) {
+            creep.withdraw(containers[0], RESOURCE_ENERGY);
+        }
         // If the creep is empty, change the state to 'mining'
         if (creep.store.getUsedCapacity() == 0) {
             creep.memory.state = 'mining';
