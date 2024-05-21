@@ -155,7 +155,7 @@ Creep.prototype.remoteHauler = function () {
 
     let controllerContainers = this.room.controller ? this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
         }
     }) : [];
 

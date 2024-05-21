@@ -73,7 +73,6 @@ StructureController.prototype.remoteMining = function () {
         let roomSourcesInRoom = _.filter(roomSourcesArray, (source) => source.pos.roomName == source.pos.roomName);
         let sourceCount = roomSourcesInRoom.length;
         // For each source, spawn a dropMiner and a hauler
-        console.log('Source: ' + source.id + ' Room: ' + source.pos.roomName + ' Sources in room: ' + sourceCount + ' DropMiners: ' + dropMinersForSource.length + ' Haulers: ' + haulersForSource.length + ' Claimers: ' + claimersForSource.length);
         if (dropMinersForSource.length < MAX_DROPMINERS && this.room.energyAvailable >= 300) {
             let body = [MOVE, WORK, WORK];
             if (this && this.my) {
