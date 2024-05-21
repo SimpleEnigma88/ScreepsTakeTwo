@@ -726,25 +726,28 @@ function placeExtensions(spawn) {
         spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
     }
 
+    // Place extentions as close to the spawn without any extension touching more than 2 other extensions
     function findBestExtensionSpot(spawn) {
-        let openSpots = [];
-        for (let i = -3; i <= 3; i++) {
-            for (let j = -3; j <= 3; j++) {
+        let bestSpot = new RoomPosition(spawn.pos.x + 2, spawn.pos.y, spawn.room.name);
+        let bestScore = 0;
+        for (let i = -2; i <= 2; i++) {
+            for (let j = -2; j <= 2; j++) {
                 let pos = new RoomPosition(spawn.pos.x + i, spawn.pos.y + j, spawn.room.name);
                 let terrain = pos.lookFor(LOOK_TERRAIN);
                 let structures = pos.lookFor(LOOK_STRUCTURES);
                 if (terrain[0] != 'wall' && structures.length == 0) {
-                    openSpots.push(pos);
+                    let score = 0;
+                    let adjacentStructures = pos.findInRange(FIND_STRUCTURES, 1, {
+                        filter: (structure) => {
+                            return structure.structureType == STRUCTURE_EXTENSION;
+                        }
+                    });
+                    score = adjacentStructures.length;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestSpot = pos;
+                    }
                 }
-            }
-        }
-        let bestSpot = openSpots[0];
-        let bestDistance = 1000;
-        for (let i = 0; i < openSpots.length; i++) {
-            let distance = spawn.pos.getRangeTo(openSpots[i]);
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                bestSpot = openSpots[i];
             }
         }
         return bestSpot;
