@@ -1,6 +1,6 @@
-const MAX_REMOTES = 4; // Number of remote sources to mine
+const MAX_REMOTES = 3; // Number of remote sources to mine
 const MAX_CLAIMERS = 0;
-const MAX_DROPMINERS = 1;
+const MAX_DROPMINERS = 2;
 const MAX_HAULERS = 5;
 
 StructureController.prototype.remoteMining = function () {
@@ -34,6 +34,9 @@ StructureController.prototype.remoteMining = function () {
     // Cut the total number of sources to MAX_REMOTES
     sources = sources.slice(0, MAX_REMOTES);
 
+    // Output each source of sources, show id and room it's located in.
+    for (let i = 0; i < sources.length; i++) {
+    }
     // Sort sources by path length between home room controller and the remote source
     // Find all creeps with the role 'remoteDropMiner'
     let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteDropMiner');
@@ -68,7 +71,8 @@ StructureController.prototype.remoteMining = function () {
         let roomSources = Memory.rooms[source.pos.roomName].sources;
         let roomSourcesArray = Object.values(roomSources);
         let roomSourcesInRoom = _.filter(roomSourcesArray, (source) => source.pos.roomName == source.pos.roomName);
-
+        let sourceCount = roomSourcesInRoom.length;
+        // For each source, spawn a dropMiner and a hauler
         if (dropMinersForSource.length < MAX_DROPMINERS && this.room.energyAvailable >= 300) {
             let body = [MOVE, WORK, WORK];
             if (this && this.my) {
@@ -80,7 +84,6 @@ StructureController.prototype.remoteMining = function () {
                     cost += 250;
                 }
             }
-
             let newName = 'RemoteDropMiner - ' + Game.time;
             this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
                 { memory: { role: 'remoteDropMiner', source: source.pos, home: this.room.name } });
@@ -88,7 +91,6 @@ StructureController.prototype.remoteMining = function () {
         }
         else if (haulersForSource.length < MAX_HAULERS && this.room.energyAvailable >= 300) {
             let body = [MOVE, CARRY, MOVE, CARRY];
-
             if (this && this.my) {
                 let cost = 100;
                 while (cost + 100 < this.room.energyAvailable) {
