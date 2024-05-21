@@ -198,8 +198,9 @@ Creep.prototype.remoteHauler = function () {
         }
         else {
             // Move to a spawn and drop the energy
-            if (this.pos.getRangeTo(spawns[0]) > 1) {
-                this.moveTo(spawns[0]);
+            spawn = this.room.find(FIND_MY_SPAWNS)[0];
+            if (this.pos.getRangeTo(spawn) > 1) {
+                this.moveTo(spawn);
             }
             else {
                 this.drop(RESOURCE_ENERGY);
