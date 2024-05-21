@@ -730,19 +730,19 @@ function placeExtensions(spawn) {
     function findBestExtensionSpot(spawn) {
         let bestSpot = new RoomPosition(spawn.pos.x + 2, spawn.pos.y, spawn.room.name);
         let bestScore = 0;
-        for (let i = -2; i <= 2; i++) {
-            for (let j = -2; j <= 2; j++) {
-                let pos = new RoomPosition(spawn.pos.x + i, spawn.pos.y + j, spawn.room.name);
-                let terrain = pos.lookFor(LOOK_TERRAIN);
+        for (let i = spawn.pos.x - 2; i <= spawn.pos.x + 2; i++) {
+            for (let j = spawn.pos.y - 2; j <= spawn.pos.y + 2; j++) {
+                let pos = new RoomPosition(i, j, spawn.room.name);
                 let structures = pos.lookFor(LOOK_STRUCTURES);
-                if (terrain[0] != 'wall' && structures.length == 0) {
-                    let score = 0;
-                    let adjacentStructures = pos.findInRange(FIND_STRUCTURES, 1, {
-                        filter: (structure) => {
-                            return structure.structureType == STRUCTURE_EXTENSION;
+                let score = 0;
+                if (structures.length == 0) {
+                    let adjacentExtensions = 0;
+                    for (let k = 0; k < extensions.length; k++) {
+                        if (extensions[k].pos.getRangeTo(pos) <= 1) {
+                            adjacentExtensions++;
                         }
-                    });
-                    score = adjacentStructures.length;
+                    }
+                    score = 9 - adjacentExtensions;
                     if (score > bestScore) {
                         bestScore = score;
                         bestSpot = pos;
