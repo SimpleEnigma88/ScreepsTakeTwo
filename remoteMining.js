@@ -30,12 +30,7 @@ StructureController.prototype.remoteMining = function () {
         }
     }
     // Sort sources by path length from home room controller
-    sources.sort((a, b) => {
-        let aPos = new RoomPosition(a.pos.x, a.pos.y, a.pos.roomName);
-        let bPos = new RoomPosition(b.pos.x, b.pos.y, b.pos.roomName);
-        let homePos = this.room.getPositionAt(25, 25); // assuming center of the room as home position
-        return homePos.getRangeTo(aPos) - homePos.getRangeTo(bPos);
-    });
+    sources.sort((a, b) => Game.map.findRoute(this.room.name, a.pos.roomName).length - Game.map.findRoute(this.room.name, b.pos.roomName).length);
     // Cut the total number of sources to MAX_REMOTES
     sources = sources.slice(0, MAX_REMOTES);
 
