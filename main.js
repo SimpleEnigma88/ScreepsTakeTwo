@@ -155,7 +155,7 @@ Creep.prototype.remoteHauler = function () {
 
     let controllerContainers = this.room.controller ? this.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 500;
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1200;
         }
     }) : [];
 
@@ -191,14 +191,14 @@ Creep.prototype.remoteHauler = function () {
         //         this.moveTo(extensions[0]);
         //     }
         // }
-        if (controllerContainers.length > 0) {
+        let spawn = this.room.find(FIND_MY_SPAWNS)[0];
+        if (controllerContainers.length > 0 /* && this.pos.getRangeTo(controllerContainers[0]) < this.pos.getRangeTo(spawn) */) {
             if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(controllerContainers[0]);
             }
         }
         else {
             // Move to a spawn and drop the energy
-            spawn = this.room.find(FIND_MY_SPAWNS)[0];
             if (this.pos.getRangeTo(spawn) > 1) {
                 this.moveTo(spawn);
             }
@@ -228,7 +228,7 @@ StructureController.prototype.placeRoads = function () {
             }
         }
     }
-    // Place roads from controller to sources and controller to spawn
+    // Place roads from spawn to controller and each source
     let spawns = this.room.find(FIND_MY_SPAWNS);
     for (let i = 0; i < spawns.length; i++) {
         let path = this.room.findPath(spawns[i].pos, controller.pos, {
@@ -243,6 +243,7 @@ StructureController.prototype.placeRoads = function () {
             }
         }
     }
+
 };
 
 
@@ -591,7 +592,7 @@ function haulerCreep(creep) {
         }
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 2, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1800;
             }
         }) : [];
         if (spawns.length > 0) {
@@ -730,10 +731,10 @@ function placeExtensions(spawn) {
 
     // Place extentions as close to the spawn without any extension touching more than 2 other extensions
     function findBestExtensionSpot(spawn) {
-        let bestSpot = new RoomPosition(spawn.pos.x + 2, spawn.pos.y, spawn.room.name);
+        let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
         let bestScore = 0;
-        for (let i = spawn.pos.x - 2; i <= spawn.pos.x + 2; i++) {
-            for (let j = spawn.pos.y - 2; j <= spawn.pos.y + 2; j++) {
+        for (let i = spawn.pos.x - 4; i <= spawn.pos.x + 4; i++) {
+            for (let j = spawn.pos.y - 4; j <= spawn.pos.y + 4; j++) {
                 let pos = new RoomPosition(i, j, spawn.room.name);
                 let structures = pos.lookFor(LOOK_STRUCTURES);
                 let score = 0;
