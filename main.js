@@ -493,8 +493,8 @@ function claimCreep(creep) {
         creep.moveTo(creep.room.controller);
         return;
     }
-    // Claim the controller
-    creep.claimController(creep.room.controller);
+    // reserve the controller
+    creep.reserveController(creep.room.controller);
 }
 
 function haulerCreep(creep) {
