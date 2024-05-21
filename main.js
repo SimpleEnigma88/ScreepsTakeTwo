@@ -181,17 +181,17 @@ Creep.prototype.remoteHauler = function () {
             this.moveTo(new RoomPosition(25, 25, this.memory.home));
             return;
         }
-        if (spawns.length > 0) {
-            if (this.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                this.moveTo(spawns[0]);
-            }
-        }
-        else if (extensions.length > 0) {
-            if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                this.moveTo(extensions[0]);
-            }
-        }
-        else if (controllerContainers.length > 0) {
+        // if (spawns.length > 0) {
+        //     if (this.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        //         this.moveTo(spawns[0]);
+        //     }
+        // }
+        // else if (extensions.length > 0) {
+        //     if (this.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        //         this.moveTo(extensions[0]);
+        //     }
+        // }
+        if (controllerContainers.length > 0) {
             if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(controllerContainers[0]);
             }
@@ -205,8 +205,9 @@ Creep.prototype.remoteHauler = function () {
             else {
                 this.drop(RESOURCE_ENERGY);
             }
-
         }
+
+
     }
 
 };
