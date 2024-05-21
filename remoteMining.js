@@ -1,4 +1,4 @@
-const MAX_REMOTES = 3;
+const MAX_REMOTES = 3; // Number of remote sources to mine
 const MAX_CLAIMERS = 0;
 const MAX_DROPMINERS = 2;
 const MAX_HAULERS = 5;
