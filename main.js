@@ -775,7 +775,7 @@ module.exports.loop = function () {
     for (let roomName in Game.rooms) {
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
-            console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
+            // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
             Game.rooms[roomName].controller.remoteMining(roomName);
             if (Game.rooms[roomName].controller.level > 3) { Game.rooms[roomName].controller.placeRoads(); }
             placeContainerAtController(Game.rooms[roomName].controller);
