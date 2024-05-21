@@ -707,29 +707,47 @@ function placeExtensions(spawn) {
         numExtensionsNeeded = 60;
     }
 
-    let queue = [spawn.pos];
-    let visited = new Set();
+    // Find current number of extensions
+    let extensions = spawn.room.find(FIND_MY_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_EXTENSION;
+        }
+    });
+    // Find construction sites for extensions
+    let constructionSites = spawn.room.find(FIND_MY_CONSTRUCTION_SITES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_EXTENSION;
+        }
+    });
+    // If the number of extensions and construction sites is less than the number needed, place a construction site
+    if (extensions.length + constructionSites.length < numExtensionsNeeded) {
+        // Find the best spot for the extension
+        let bestSpot = findBestExtensionSpot(spawn);
+        spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
+    }
 
-    while (queue.length > 0 && numExtensionsNeeded > 0) {
-        let currentPos = queue.shift();
-        visited.add(currentPos);
-
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                if (dx == 0 && dy == 0) continue; // Skip the current position
-
-                let newPos = new RoomPosition(currentPos.x + dx, currentPos.y + dy, spawn.room.name);
-                let terrain = newPos.lookFor(LOOK_TERRAIN);
-                let structures = newPos.lookFor(LOOK_STRUCTURES);
-
-                if (terrain[0] != 'wall' && structures.length == 0 && !visited.has(newPos)) {
-                    spawn.room.createConstructionSite(newPos, STRUCTURE_EXTENSION);
-                    numExtensionsNeeded--;
-                    if (numExtensionsNeeded == 0) return; // Stop if we have placed all needed extensions
-                    queue.push(newPos);
+    function findBestExtensionSpot(spawn) {
+        let openSpots = [];
+        for (let i = -3; i <= 3; i++) {
+            for (let j = -3; j <= 3; j++) {
+                let pos = new RoomPosition(spawn.pos.x + i, spawn.pos.y + j, spawn.room.name);
+                let terrain = pos.lookFor(LOOK_TERRAIN);
+                let structures = pos.lookFor(LOOK_STRUCTURES);
+                if (terrain[0] != 'wall' && structures.length == 0) {
+                    openSpots.push(pos);
                 }
             }
         }
+        let bestSpot = openSpots[0];
+        let bestDistance = 1000;
+        for (let i = 0; i < openSpots.length; i++) {
+            let distance = spawn.pos.getRangeTo(openSpots[i]);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestSpot = openSpots[i];
+            }
+        }
+        return bestSpot;
     }
 
 }
@@ -805,6 +823,7 @@ module.exports.loop = function () {
         // For each spawn in the room, place a container
         for (let i = 0; i < spawns.length; i++) {
             placeContainer(spawns[i]);
+            placeExtensions(spawns[i]);
             // Record the last 1500 ticks of energy in the spawn and if it was spawning each of those ticks or not
             if (spawns[i].memory.energy == undefined) {
                 spawns[i].memory.energy = [];
