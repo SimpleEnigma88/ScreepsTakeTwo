@@ -1,7 +1,7 @@
 const MAX_REMOTES = 4; // Number of remote sources to mine
 const MAX_CLAIMERS = 0;
-const MAX_DROPMINERS = 2;
-const MAX_HAULERS = 3;
+const MAX_DROPMINERS = 1;
+const MAX_HAULERS = 5;
 
 StructureController.prototype.remoteMining = function () {
     if (Memory.rooms == undefined) {
