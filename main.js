@@ -1,5 +1,7 @@
 const remoteMining = require('remoteMining');
-const LinkLogic = require('LinkLogic');
+import * as LinkLogic from './LinkLogic.js';
+let LinkLogic = require('LinkLogic');
+
 const MAX_HAULERS = 5;
 const MAX_REMOTE_MINERS = 5;
 function exploreAdjacentRooms(creep) {
