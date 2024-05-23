@@ -856,6 +856,15 @@ module.exports.loop = function () {
         var spawns = room.find(FIND_MY_SPAWNS);
         // For each spawn in the room, place a container
         // For each spawn in the room, place a container
+
+        // If no miners or dropMiners, spawn a new miner
+        if (miners.length < 1 && spawns.length > 0 && dropMiners.length < 1) {
+            var newName = 'Miner - ' + Game.time;
+            spawns[0].spawnCreep([WORK, CARRY, MOVE], newName,
+                { memory: { role: 'miner', home: roomName } });
+        }
+
+
         for (let i = 0; i < spawns.length; i++) {
             placeContainer(spawns[i]);
             placeExtensions(spawns[i]);
