@@ -660,7 +660,7 @@ function placeContainer(structure) {
     let containerPos = new RoomPosition(structurePos.x - 1, structurePos.y - 1, structurePos.roomName);
     let terrain = containerPos.lookFor(LOOK_TERRAIN);
     let structures = containerPos.lookFor(LOOK_STRUCTURES);
-    if (terrain[0] == 'wall' || structures.length > 0) {
+    if (terrain[0] == 'wall' || structures.length > 0 && structure.room.controller.level > 2) {
         return;
     }
     structure.room.createConstructionSite(containerPos, STRUCTURE_CONTAINER);
@@ -779,7 +779,7 @@ function placeExtensions(spawn) {
         spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
     }
 
-    // Place extentions as close to the spawn without any extension touching more than 2 other extensions
+    // Place extensions as close to the spawn without any extension touching more than 2 other extensions
     function findBestExtensionSpot(spawn) {
         let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
         let bestScore = 0;
