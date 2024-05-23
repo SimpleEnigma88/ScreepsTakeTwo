@@ -332,7 +332,7 @@ function minerCreep(creep) {
     // A creep can have multiple states, mining, filling, building, upgrading, etc.
     // The state is stored in the creep's memory
     if (creep.memory.state == undefined) {
-        creep.memory.state = 'mining';
+        creep.memory.state = 'filling';
     }
 
     // If the creep is mining
@@ -1001,7 +1001,7 @@ module.exports.loop = function () {
 
             var newName = 'Miner - ' + Game.time;
             spawns[0].spawnCreep(body, newName,
-                { memory: { role: 'miner', home: roomName } });
+                { memory: { role: 'miner', home: roomName, state: 'filling' } });
         }
 
         // Find containers withing range 2 of the controller
