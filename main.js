@@ -848,8 +848,8 @@ module.exports.loop = function () {
     console.log('Tick: ' + Game.time);
     for (let roomName in Game.rooms) {
 
-        body = [MOVE, WORK, WORK];
-        LinkLogic.runLinkLogic(roomName);
+        // body = [MOVE, WORK, WORK];
+        // LinkLogic.runLinkLogic(roomName);
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
             // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
