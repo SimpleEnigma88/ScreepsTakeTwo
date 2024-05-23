@@ -848,6 +848,7 @@ module.exports.loop = function () {
     console.log('Tick: ' + Game.time);
     for (let roomName in Game.rooms) {
 
+        body = [MOVE, WORK, WORK];
         LinkLogic.runLinkLogic(roomName);
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
