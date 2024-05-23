@@ -655,7 +655,7 @@ function haulerCreep(creep) {
 
 function placeContainer(structure) {
     // if a container or construction site already exists in target position, return
-
+    console.log(structure.room.controller.level);
     let structurePos = structure.pos;
     let containerPos = new RoomPosition(structurePos.x - 1, structurePos.y - 1, structurePos.roomName);
     let terrain = containerPos.lookFor(LOOK_TERRAIN);
