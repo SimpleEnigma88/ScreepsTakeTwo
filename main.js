@@ -686,13 +686,15 @@ function placeContainerAtController(controller) {
 
     // Find all open spots in range 2 of the controller not adjacent to a wall or structure
     let openSpots = [];
+    // Iterate over all squares in a 5x5 square around the controller
+    // Remove those next to structures or walls or other containers
     for (let i = controller.pos.x - 2; i <= controller.pos.x + 2; i++) {
         for (let j = controller.pos.y - 2; j <= controller.pos.y + 2; j++) {
-            let pos = new RoomPosition(i, j, controller.room.name);
-            let terrain = pos.lookFor(LOOK_TERRAIN);
-            let structures = pos.lookFor(LOOK_STRUCTURES);
+            let position = new RoomPosition(i, j, controller.room.name);
+            let terrain = position.lookFor(LOOK_TERRAIN);
+            let structures = position.lookFor(LOOK_STRUCTURES);
             if (terrain[0] != 'wall' && structures.length == 0) {
-                openSpots.push(pos);
+                openSpots.push(position);
             }
         }
     }
