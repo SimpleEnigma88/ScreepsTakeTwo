@@ -1,4 +1,5 @@
 const remoteMining = require('remoteMining');
+const linkLogic = require('linkLogic');
 const MAX_HAULERS = 5;
 const MAX_REMOTE_MINERS = 5;
 function exploreAdjacentRooms(creep) {
@@ -826,6 +827,8 @@ function displayEnergy(obj) {
 module.exports.loop = function () {
     console.log('Tick: ' + Game.time);
     for (let roomName in Game.rooms) {
+
+        linkLogic(roomName);
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
             // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
@@ -857,9 +860,11 @@ module.exports.loop = function () {
         // For each spawn in the room, place a container
         // For each spawn in the room, place a container
 
+        // TODO :: Better method of room recovery than a bootstrap function
         // If no miners or dropMiners, spawn a new miner
         if (miners.length < 1 && spawns.length > 0 && dropMiners.length < 1) {
             var newName = 'Miner - ' + Game.time;
+            // Small creep with 1 WORK, 1 CARRY, 1 MOVE for room recovery(300- energy cost)
             spawns[0].spawnCreep([WORK, CARRY, MOVE], newName,
                 { memory: { role: 'miner', home: roomName } });
         }
@@ -990,13 +995,16 @@ module.exports.loop = function () {
             for (let i = 0; i < controllerContainers.length; i++) {
             }
         }
-        if (room.controller && room.controller.my) {
-            //room.controller.remoteMining();
-        }
         // Remove dead creeps from memory
         for (let name in Memory.creeps) {
             if (!Game.creeps[name]) {
                 delete Memory.creeps[name];
+            }
+        }
+        // Remove dead spawns from memory(from respawns, etc.)
+        for (let name in Memory.spawns) {
+            if (!Game.spawns[name]) {
+                delete Memory.spawns[name];
             }
         }
         for (let creepName in Game.creeps) {
