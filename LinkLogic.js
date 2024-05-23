@@ -1,5 +1,6 @@
 const MIN_TERMINAL_ENERGY = 15000;
-export function getLinks(roomName) {
+
+function getLinks(roomName) {
     let room = Game.rooms[roomName];
     if (room.memory.links == undefined) {
         return;
@@ -28,7 +29,7 @@ export function getLinks(roomName) {
     };
 }
 
-export function setLinks(roomName) {
+function setLinks(roomName) {
     let room = Game.rooms[roomName];
     if (room.memory.links == undefined) {
         return;
@@ -75,7 +76,7 @@ export function setLinks(roomName) {
     }
 }
 
-export function runLinkLogic(roomName) {
+function runLinkLogic(roomName) {
     let links = getLinks(roomName);
     if (links == undefined) {
         return;
