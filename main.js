@@ -850,6 +850,8 @@ module.exports.loop = function () {
 
         // body = [MOVE, WORK, WORK];
         // LinkLogic.runLinkLogic(roomName);
+        // Log CPU usage at this point
+        console.log(Game.time + ': CPU used at the beginning of the loop: ' + Game.cpu.getUsed());
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
             // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
