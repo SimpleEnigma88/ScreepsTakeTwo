@@ -967,6 +967,8 @@ module.exports.loop = function () {
             Game.rooms[roomName].controller.my) {
             console.log('Miners: ' + miners.length + ' DropMiners: ' + dropMiners.length + ' Access Points: ' + accessPoints);
         }
+        // Console log CPU usage
+        console.log(Game.time + ': CPU used after spawning: ' + Game.cpu.getUsed());
         body = [MOVE, WORK, WORK];
         if (Game.rooms[roomName].controller &&
             Game.rooms[roomName].controller.my &&
@@ -1006,6 +1008,8 @@ module.exports.loop = function () {
                 { memory: { role: 'miner', home: roomName, state: 'filling' } });
         }
 
+        // Console log CPU usage
+        console.log(Game.time + ': CPU used after spawning: ' + Game.cpu.getUsed());
         // Find containers withing range 2 of the controller
         if (room.controller) {
             let controllerContainers = room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
