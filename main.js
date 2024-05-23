@@ -655,12 +655,11 @@ function haulerCreep(creep) {
 
 function placeContainer(structure) {
     // if a container or construction site already exists in target position, return
-    console.log(structure.room.controller.level);
     let structurePos = structure.pos;
     let containerPos = new RoomPosition(structurePos.x - 1, structurePos.y - 1, structurePos.roomName);
     let terrain = containerPos.lookFor(LOOK_TERRAIN);
     let structures = containerPos.lookFor(LOOK_STRUCTURES);
-    if (terrain[0] == 'wall' || structures.length > 0 && structure.room.controller.level > 2) {
+    if (terrain[0] == 'wall' || structures.length > 0 && structure.room.controller.level < 2) {
         return;
     }
     structure.room.createConstructionSite(containerPos, STRUCTURE_CONTAINER);
