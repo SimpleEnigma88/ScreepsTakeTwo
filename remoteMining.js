@@ -1,3 +1,7 @@
+const MAX_REMOTES = 4; // Number of remote sources to mine
+const MAX_CLAIMERS = 0;
+const MAX_DROPMINERS = 1;
+const MAX_HAULERS = 5;
 
 StructureController.prototype.remoteMining = function () {
     if (Memory.rooms == undefined) {
@@ -13,7 +17,7 @@ StructureController.prototype.remoteMining = function () {
     }
     // Remove sources that are more than 1 room away
     for (let i = 0; i < sources.length; i++) {
-        if (Game.map.findRoute(this.room.name, sources[i].pos.roomName).length >= 3) {
+        if (Game.map.findRoute(this.room.name, sources[i].pos.roomName).length >= 4) {
             sources.splice(i, 1);
             i--;
         }
@@ -27,8 +31,8 @@ StructureController.prototype.remoteMining = function () {
     }
     // Sort sources by path length from home room controller
     sources.sort((a, b) => Game.map.findRoute(this.room.name, a.pos.roomName).length - Game.map.findRoute(this.room.name, b.pos.roomName).length);
-    // Cut the total number of sources to 5
-    sources = sources.slice(0, 5);
+    // Cut the total number of sources to MAX_REMOTES
+    sources = sources.slice(0, MAX_REMOTES);
 
     // Output each source of sources, show id and room it's located in.
     for (let i = 0; i < sources.length; i++) {
@@ -38,6 +42,13 @@ StructureController.prototype.remoteMining = function () {
     let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteDropMiner');
     let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteHauler');
     let claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
+    // Remove claimers that have less than 100 ticks to live
+    for (let i = 0; i < claimers.length; i++) {
+        if (claimers[i].ticksToLive < 100) {
+            claimers.splice(i, 1);
+            i--;
+        }
+    }
     let source = {};
 
     // For each unique source, spawn a dropMiner and a hauler
@@ -62,7 +73,7 @@ StructureController.prototype.remoteMining = function () {
         let roomSourcesInRoom = _.filter(roomSourcesArray, (source) => source.pos.roomName == source.pos.roomName);
         let sourceCount = roomSourcesInRoom.length;
         // For each source, spawn a dropMiner and a hauler
-        if (dropMinersForSource.length < 2 && this.room.energyAvailable >= 300) {
+        if (dropMinersForSource.length < MAX_DROPMINERS && this.room.energyAvailable >= 300) {
             let body = [MOVE, WORK, WORK];
             if (this && this.my) {
                 let cost = 250;
@@ -78,7 +89,7 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteDropMiner', source: source.pos, home: this.room.name } });
             break;
         }
-        else if (haulersForSource.length < 4 && this.room.energyAvailable >= 300) {
+        else if (haulersForSource.length < MAX_HAULERS && this.room.energyAvailable >= 300) {
             let body = [MOVE, CARRY, MOVE, CARRY];
             if (this && this.my) {
                 let cost = 100;
@@ -93,7 +104,7 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
             break;
         }
-        if (claimersForSource.length < 1 && this.room.energyAvailable > 750) {
+        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
             let newName = 'Claimer - ' + Game.time;
             this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
                 { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
