@@ -689,26 +689,30 @@ function placeContainerAtController(controller) {
     // Iterate over all squares in a 5x5 square around the controller
     for (let i = controller.pos.x - 2; i <= controller.pos.x + 2; i++) {
         for (let j = controller.pos.y - 2; j <= controller.pos.y + 2; j++) {
-            let position = new RoomPosition(i, j, controller.room.name);
-            let terrain = position.lookFor(LOOK_TERRAIN);
-            let structures = position.lookFor(LOOK_STRUCTURES);
-            if (terrain[0] != 'wall' && structures.length == 0) {
-                openSpots.push(position);
+            let position = new RoomPosition(i, j, controller.pos.roomName);
+            // Check if the position is in range 2 of the controller
+            if (controller.pos.getRangeTo(position) == 2) {
+                // Check if the position is not adjacent to a wall or structure
+                let terrain = position.lookFor(LOOK_TERRAIN);
+                let structures = position.lookFor(LOOK_STRUCTURES);
+                if (terrain[0] != 'wall' && structures.length == 0) {
+                    // Check adjacent spots
+                    let adjacentPositions = [
+                        new RoomPosition(i - 1, j, controller.pos.roomName),
+                        new RoomPosition(i + 1, j, controller.pos.roomName),
+                        new RoomPosition(i, j - 1, controller.pos.roomName),
+                        new RoomPosition(i, j + 1, controller.pos.roomName)
+                    ];
+                    let isAdjacentOpen = adjacentPositions.every(adjacentPosition => {
+                        let adjacentTerrain = adjacentPosition.lookFor(LOOK_TERRAIN);
+                        let adjacentStructures = adjacentPosition.lookFor(LOOK_STRUCTURES);
+                        return adjacentTerrain[0] != 'wall' && adjacentStructures.length == 0;
+                    });
+                    if (isAdjacentOpen) {
+                        openSpots.push(position);
+                    }
+                }
             }
-        }
-    }
-    // Remove those next to structures or walls or other containers
-    for (let i = 0; i < openSpots.length; i++) {
-        let position = openSpots[i];
-        let adjacentStructures = position.findInRange(FIND_STRUCTURES, 1);
-        let adjacentContainers = position.findInRange(FIND_STRUCTURES, 1, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER;
-            }
-        });
-        if (adjacentStructures.length > 0 || adjacentContainers.length > 0) {
-            openSpots.splice(i, 1);
-            i--;
         }
     }
 
