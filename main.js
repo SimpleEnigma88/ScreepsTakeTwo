@@ -945,13 +945,13 @@ module.exports.loop = function () {
             Game.rooms[roomName].controller.my) {
             console.log('Miners: ' + miners.length + ' DropMiners: ' + dropMiners.length + ' Access Points: ' + accessPoints);
         }
+        body = [MOVE, WORK, WORK];
         if (Game.rooms[roomName].controller &&
             Game.rooms[roomName].controller.my &&
             dropMiners.length < accessPoints &&
             miners.length > dropMiners.length &&
             dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1) {
             console.log('Spawning dropMiner');
-            body = [MOVE, WORK, WORK];
             let cost = 250;
             while (cost + 250 < room.energyAvailable) {
                 body.push(MOVE);
