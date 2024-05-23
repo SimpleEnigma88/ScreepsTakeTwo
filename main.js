@@ -687,7 +687,6 @@ function placeContainerAtController(controller) {
     // Find all open spots in range 2 of the controller not adjacent to a wall or structure
     let openSpots = [];
     // Iterate over all squares in a 5x5 square around the controller
-    // Remove those next to structures or walls or other containers
     for (let i = controller.pos.x - 2; i <= controller.pos.x + 2; i++) {
         for (let j = controller.pos.y - 2; j <= controller.pos.y + 2; j++) {
             let position = new RoomPosition(i, j, controller.room.name);
@@ -696,6 +695,20 @@ function placeContainerAtController(controller) {
             if (terrain[0] != 'wall' && structures.length == 0) {
                 openSpots.push(position);
             }
+        }
+    }
+    // Remove those next to structures or walls or other containers
+    for (let i = 0; i < openSpots.length; i++) {
+        let position = openSpots[i];
+        let adjacentStructures = position.findInRange(FIND_STRUCTURES, 1);
+        let adjacentContainers = position.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER;
+            }
+        });
+        if (adjacentStructures.length > 0 || adjacentContainers.length > 0) {
+            openSpots.splice(i, 1);
+            i--;
         }
     }
 
