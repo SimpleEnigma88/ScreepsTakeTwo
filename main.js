@@ -969,17 +969,16 @@ module.exports.loop = function () {
         }
         else if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0) {
             console.log('Spawning miner');
+            let cost = 250;
             body = [MOVE, MOVE, CARRY, WORK];
-            if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
-                let cost = 250;
-                while (cost + 250 < room.energyAvailable) {
-                    body.push(MOVE);
-                    body.push(MOVE);
-                    body.push(CARRY);
-                    body.push(WORK);
-                    cost += 250;
-                }
+            while (cost + 250 < room.energyAvailable) {
+                body.push(MOVE);
+                body.push(MOVE);
+                body.push(CARRY);
+                body.push(WORK);
+                cost += 250;
             }
+
             var newName = 'Miner - ' + Game.time;
             spawns[0].spawnCreep(body, newName,
                 { memory: { role: 'miner', home: roomName } });
