@@ -684,11 +684,11 @@ function placeContainerAtController(controller) {
         return;
     }
 
-    // Find all open spots in range 2 of the controller
+    // Find all open spots in range 2 of the controller not adjacent to a wall or structure
     let openSpots = [];
-    for (let i = -2; i <= 2; i++) {
-        for (let j = -2; j <= 2; j++) {
-            let pos = new RoomPosition(controller.pos.x + i, controller.pos.y + j, controller.room.name);
+    for (let i = controller.pos.x - 2; i <= controller.pos.x + 2; i++) {
+        for (let j = controller.pos.y - 2; j <= controller.pos.y + 2; j++) {
+            let pos = new RoomPosition(i, j, controller.room.name);
             let terrain = pos.lookFor(LOOK_TERRAIN);
             let structures = pos.lookFor(LOOK_STRUCTURES);
             if (terrain[0] != 'wall' && structures.length == 0) {
@@ -696,6 +696,7 @@ function placeContainerAtController(controller) {
             }
         }
     }
+
     // Pick one of these spots that is closest to the two sources
     let sources = controller.room.find(FIND_SOURCES);
     let bestSpot = openSpots[0];
