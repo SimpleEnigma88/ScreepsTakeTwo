@@ -668,6 +668,9 @@ function placeContainer(structure) {
 
 // Function to place a container at a controller 2 squares away, but in the direction of the sources
 function placeContainerAtController(controller) {
+    if (controller.level < 3) {
+        return;
+    }
     // If there are already a total of two containers or construction sites within range 2 of the controller, return
     let containers = controller.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: (structure) => {
@@ -856,8 +859,12 @@ module.exports.loop = function () {
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
             // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
             Game.rooms[roomName].controller.remoteMining(roomName);
-            if (Game.rooms[roomName].controller.level > 3) { Game.rooms[roomName].controller.placeRoads(); }
-            placeContainerAtController(Game.rooms[roomName].controller);
+            if (Game.rooms[roomName].controller.level > 3) {
+                Game.rooms[roomName].controller.placeRoads();
+            }
+            if (Game.rooms[roomName].controller.level > 2) {
+                placeContainerAtController(Game.rooms[roomName].controller);
+            }
         }
         // Calculate the number of access points to the sources
         let sources = room.find(FIND_SOURCES);
