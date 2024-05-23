@@ -1,7 +1,6 @@
 const remoteMining = require('remoteMining');
-const LinkLogic = require('./LinkLogic.js');
-
-let links = LinkLogic.getLinks('room1');
+import * as LinkLogic from 'LinkLogic';
+let LinkLogic = require('LinkLogic');
 
 const MAX_HAULERS = 5;
 const MAX_REMOTE_MINERS = 5;
