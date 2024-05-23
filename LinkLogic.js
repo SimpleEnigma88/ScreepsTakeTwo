@@ -103,7 +103,7 @@ export function runLinkLogic(roomName) {
 
 }
 module.exports = {
-    runLinkLogic,
+    getLinks,
     setLinks,
-    getLink
+    runLinkLogic
 };
