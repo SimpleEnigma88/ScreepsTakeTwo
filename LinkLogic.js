@@ -2,7 +2,7 @@ const MIN_TERMINAL_ENERGY = 15000;
 
 function getLinks(roomName) {
     let room = Game.rooms[roomName];
-    if (!room.memory || room.memory.links == undefined) {
+    if (!Game.rooms[roomName] || !room.memory || room.memory.links == undefined) {
         return;
     }
     let links = room.memory.links;
