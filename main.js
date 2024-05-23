@@ -1058,5 +1058,7 @@ module.exports.loop = function () {
             }
         }
 
+        // Console log CPU usage
+        console.log(Game.time + ': CPU used at the end of the script: ' + Game.cpu.getUsed());
     };
 };
