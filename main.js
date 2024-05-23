@@ -667,6 +667,7 @@ function placeContainer(structure) {
 
 // Function to place a container at a controller 2 squares away, but in the direction of the sources
 function placeContainerAtController(controller) {
+    console.log(controller.level);
     if (controller.level < 3) {
         return;
     }
@@ -900,7 +901,9 @@ module.exports.loop = function () {
 
 
         for (let i = 0; i < spawns.length; i++) {
-            placeContainer(spawns[i]);
+            if (Game.rooms[roomName].controller.level > 2) {
+                placeContainer(spawns[i]);
+            }
             placeExtensions(spawns[i]);
             // Record the last 1500 ticks of energy in the spawn and if it was spawning each of those ticks or not
             if (spawns[i].memory.energy == undefined) {
