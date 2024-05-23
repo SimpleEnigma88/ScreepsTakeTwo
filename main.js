@@ -1,5 +1,5 @@
 const remoteMining = require('remoteMining');
-const LinkLogic = require('linkLogic');
+const LinkLogic = require('LinkLogic');
 const MAX_HAULERS = 5;
 const MAX_REMOTE_MINERS = 5;
 function exploreAdjacentRooms(creep) {
@@ -828,7 +828,7 @@ module.exports.loop = function () {
     console.log('Tick: ' + Game.time);
     for (let roomName in Game.rooms) {
 
-        linkLogic(roomName);
+        LinkLogic(roomName);
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
             // console.log(roomName + ' - ' + Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].name + ' - ' + Game.rooms[roomName].energyAvailable);
