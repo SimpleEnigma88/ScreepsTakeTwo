@@ -28,7 +28,7 @@ function getLink(roomName) {
     };
 }
 
-export function setLinks(roomName) {
+function setLinks(roomName) {
     let room = Game.rooms[roomName];
     if (room.memory.links == undefined) {
         return;
