@@ -1,6 +1,6 @@
 const remoteMining = require('remoteMining');
 const MAX_HAULERS = 5;
-const MAX_REMOTE_MINERS = 5;
+const MAX_REMOTE_MINERS = 3;
 function exploreAdjacentRooms(creep) {
     // If creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
@@ -558,20 +558,6 @@ function claimCreep(creep) {
 }
 
 function haulerCreep(creep) {
-    let adjacentCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
-        filter: (creep) => {
-            // Check if the creep is a miner or hauler and has capacity for more energy
-            return ((creep.memory.role == 'miner') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
-        }
-    });
-
-    // If there are any, transfer energy to the first one
-    if (adjacentCreeps.length > 0) {
-        if (creep.transfer(adjacentCreeps[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(adjacentCreeps[0]);
-        }
-        return; // Exit the function early so the creep doesn't do anything else this tick
-    }
 
     let spawns = creep.room.find(FIND_MY_SPAWNS, {
         filter: (structure) => {
