@@ -696,7 +696,7 @@ function placeContainer(structure) {
 
 // Function to place a container at a controller 2 squares away, but in the direction of the sources
 function placeContainerAtController(controller) {
-    if (controller.level < 3) {
+    if (Game.time % 10 = 0 && controller.level < 2) {
         return;
     }
     // If there are already a total of two containers or construction sites within range 2 of the controller, return
