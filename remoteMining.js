@@ -1,4 +1,4 @@
-const MAX_REMOTES = 4; // Number of remote sources to mine
+const MAX_REMOTES = 6; // Number of remote sources to mine
 const MAX_CLAIMERS = 0;
 const MAX_DROPMINERS = 1;
 const MAX_HAULERS = 5;
@@ -73,7 +73,6 @@ StructureController.prototype.remoteMining = function () {
         let roomSourcesInRoom = _.filter(roomSourcesArray, (source) => source.pos.roomName == source.pos.roomName);
         let sourceCount = roomSourcesInRoom.length;
         // For each source, spawn a dropMiner and a hauler
-        console.log('DropMinersForSource: ' + dropMinersForSource.length);
         if (dropMinersForSource.length < MAX_DROPMINERS && this.room.energyAvailable >= 300) {
             console.log('Spawning remoteDropMiner');
             let body = [MOVE, WORK, WORK];
