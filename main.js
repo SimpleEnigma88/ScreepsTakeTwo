@@ -726,6 +726,22 @@ function placeContainerAtController(controller) {
             }
         }
     }
+    // Remove spots that are next to other structures or walls
+    for (let i = 0; i < openSpots.length; i++) {
+        let pos = openSpots[i];
+        for (let j = -1; j <= 1; j++) {
+            for (let k = -1; k <= 1; k++) {
+                let newPos = new RoomPosition(pos.x + j, pos.y + k, pos.roomName);
+                let terrain = newPos.lookFor(LOOK_TERRAIN);
+                let structures = newPos.lookFor(LOOK_STRUCTURES);
+                if (terrain[0] == 'wall' || structures.length > 0) {
+                    openSpots.splice(i, 1);
+                    i--;
+                    break;
+                }
+            }
+        }
+    }
 
     // Pick one of these spots that is closest to the two sources
     let sources = controller.room.find(FIND_SOURCES);
