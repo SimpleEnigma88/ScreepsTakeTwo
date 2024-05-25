@@ -889,7 +889,7 @@ function displayControllerProgress(controller) {
 }
 
 module.exports.loop = function () {
-    console.log('Tick: ' + Game.time);
+    console.log('Tick: ' + Game.time + ' || CPU: ' + Game.cpu.getUsed() + ' || Bucket: ' + Game.cpu.bucket;
     for (let roomName in Game.rooms) {
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
