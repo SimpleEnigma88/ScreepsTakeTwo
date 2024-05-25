@@ -726,9 +726,6 @@ function placeContainerAtController(controller) {
             }
         }
     }
-    // sort by which spot is in the middle of the spot range
-    openSpots.sort((a, b) => Math.abs(a.x - controller.pos.x) + Math.abs(a.y - controller.pos.y) - Math.abs(b.x - controller.pos.x) + Math.abs(b.y - controller.pos.y));
-
 
     // Pick one of these spots that is closest to the two sources
     let sources = controller.room.find(FIND_SOURCES);
