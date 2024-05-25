@@ -309,7 +309,14 @@ Creep.prototype.doNotIdleOnRoads = function () {
         }
     }
 };
-
+function pickupOnTheFly(creep) {
+    // Find any dropped resources withing 1 square of this creep
+    let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
+    // If there are dropped resources, pick them up
+    if (droppedResources.length > 0) {
+        creep.pickup(droppedResources[0]);
+    }
+}
 function minerCreep(creep) {
     // If the creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
@@ -323,7 +330,7 @@ function minerCreep(creep) {
     // sort the dropped resources by path distance
     droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     // filter out amounts less than .5 of creep capacity
-    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .5);
+    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
     // Sort by percentage complete, those closest to completion first
     constructionSites.sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
@@ -397,6 +404,7 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'filling') {
         repairOnTheFly(creep);
+        pickupOnTheFly(creep);
         // Find all extensions that need energy in the room
         let extensions = creep.room.find(FIND_MY_STRUCTURES, {
             filter: (structure) => {
@@ -408,6 +416,7 @@ function minerCreep(creep) {
             creep.memory.state = 'mining';
         }
         else {
+            pickupOnTheFly(creep);
             if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawn);
             }
@@ -424,6 +433,7 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'building') {
         repairOnTheFly(creep);
+        pickupOnTheFly(creep);
         let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER;
@@ -433,6 +443,7 @@ function minerCreep(creep) {
         if (containers.length > 0) {
             creep.withdraw(containers[0], RESOURCE_ENERGY);
         }
+
         // If the creep is empty, change the state to 'mining'
         if (creep.store.getUsedCapacity() == 0) {
             creep.memory.state = 'mining';
@@ -450,18 +461,14 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'upgrading') {
         repairOnTheFly(creep);
+        pickupOnTheFly(creep);
         // Find any containers within range 1 of this creep
         let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER;
             }
         });
-        // Find any dropped resources withing 1 square of this creep
-        let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
-        // If there are dropped resources, pick them up
-        if (droppedResources.length > 0) {
-            creep.pickup(droppedResources[0]);
-        }
+
         // If there are containers, withdraw energy from them
         if (containers.length > 0) {
             creep.withdraw(containers[0], RESOURCE_ENERGY);
@@ -558,6 +565,7 @@ function claimCreep(creep) {
 }
 
 function haulerCreep(creep) {
+    pickupOnTheFly(creep);
 
     let spawns = creep.room.find(FIND_MY_SPAWNS, {
         filter: (structure) => {
@@ -583,10 +591,10 @@ function haulerCreep(creep) {
     extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    droppedResources = droppedResources.filter(resource => resource.amount > 50);
+    droppedResources = droppedResources.filter(resource => resource.amount > 0);
     // sort the dropped resources by amount
-    const weightAmount = 0.5; // weight for the amount of resources
-    const weightDistance = 4; // weight for the distance from the creep
+    const weightAmount = 0.3; // weight for the amount of resources
+    const weightDistance = 5.25; // weight for the distance from the creep
 
     droppedResources.sort((a, b) => {
         const distanceToA = creep.pos.getRangeTo(a);
@@ -644,12 +652,13 @@ function haulerCreep(creep) {
         }
     }
     if (creep.memory.state == 'hauling') {
+
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1800;
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
             }
         }) : [];
         if (spawns.length > 0) {
@@ -726,6 +735,9 @@ function placeContainerAtController(controller) {
             }
         }
     }
+    // Sort by the spot closest to the oldest spawn
+    let spawns = controller.room.find(FIND_MY_SPAWNS);
+    openSpots.sort((a, b) => spawns[0].pos.getRangeTo(a) - spawns[0].pos.getRangeTo(b));
 
     // Pick one of these spots that is closest to the two sources
     let sources = controller.room.find(FIND_SOURCES);
