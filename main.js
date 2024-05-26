@@ -395,6 +395,13 @@ function minerCreep(creep) {
                     return;
                 }
             }
+            const storage = creep.room.storage;
+            if (storage) {
+                if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(storage);
+                    return;
+                }
+            }
             // Sort the sources by path distance
             sources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
             if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
@@ -546,7 +553,20 @@ function dropCreep(creep) {
     if (creep.harvest(Game.getObjectById(creep.memory.source)) == ERR_NOT_IN_RANGE) {
         creep.moveTo(Game.getObjectById(creep.memory.source));
     }
-
+    // If a source container exists for this source, move to it and stay on it
+    let source = Game.getObjectById(creep.memory.source);
+    let sourceContainers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_CONTAINER;
+        }
+    });
+    if (sourceContainers.length > 0) {
+        creep.moveTo(sourceContainers[0]);
+    }
+    // If the creep is full, drop the energy
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+        creep.drop(RESOURCE_ENERGY);
+    }
 }
 
 function claimCreep(creep) {
@@ -572,7 +592,7 @@ function haulerCreep(creep) {
             return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-
+    let storage = creep.room.storage;
     let spawnContainers = [];
     for (let i = 0; i < spawns.length; i++) {
         let spawn = spawns[i];
@@ -591,7 +611,7 @@ function haulerCreep(creep) {
     extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    droppedResources = droppedResources.filter(resource => resource.amount > 0);
+    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * 0.1);
     // sort the dropped resources by amount
     const weightAmount = 0.3; // weight for the amount of resources
     const weightDistance = 5.25; // weight for the distance from the creep
@@ -616,10 +636,15 @@ function haulerCreep(creep) {
         let source = sources[i];
         sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > creep.store.getFreeCapacity(RESOURCE_ENERGY);
             }
         }));
     }
+    let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+        }
+    }) : [];
 
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
@@ -647,6 +672,24 @@ function haulerCreep(creep) {
         if (sourceContainers.length > 0) {
             if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceContainers[0]);
+                return;
+            }
+        }
+        if ((extensions.length || spawns.length || controllerContainers.length) && storage) {
+            if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(storage);
+                return;
+            }
+        }
+        if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
+            if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawnContainers[0]);
+                return;
+            }
+        }
+        if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
+            if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(controllerContainers[0]);
                 return;
             }
         }
@@ -682,6 +725,12 @@ function haulerCreep(creep) {
         if (spawnContainers.length > 0) {
             if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
+                return;
+            }
+        }
+        if (storage) {
+            if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(storage);
                 return;
             }
         }
@@ -836,7 +885,7 @@ function placeExtensions(spawn) {
 const NUM_CREEPS = {
 
     'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
-    'miner': [12, 12, 10, 6, 6, 5, 4, 4],
+    'miner': [12, 10, 10, 10, 10, 8, 8, 8],
     'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
     'builder': [5, 5, 5, 5, 5, 5, 5, 5],
     'dropMiner': [4, 4, 3, 2, 1, 1, 1, 1],
@@ -1023,7 +1072,7 @@ module.exports.loop = function () {
                 body.push(WORK);
                 cost += 250;
                 // break after # of work parts is >= 5
-                if (body.length > 6) {
+                if (body.length > 9) {
                     break;
                 }
             }

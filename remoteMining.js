@@ -42,6 +42,18 @@ StructureController.prototype.remoteMining = function () {
     let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteDropMiner');
     let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteHauler');
     let claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
+
+    // Remove haulers that have less than 25 ticks to live
+    for (let i = 0; i < haulers.length; i++) {
+        if (haulers[i].ticksToLive < 100) {
+            haulers.splice(i, 1);
+            i--;
+        }
+    }
+    // Calculate the number of CARRY parts for all haulers present.
+
+
+
     // Remove claimers that have less than 100 ticks to live
     for (let i = 0; i < claimers.length; i++) {
         if (claimers[i].ticksToLive < 100) {
@@ -65,7 +77,22 @@ StructureController.prototype.remoteMining = function () {
         dropMinersForSource = _.filter(dropMiners, (creep) => creep.memory.source.x == source.pos.x && creep.memory.source.y == source.pos.y && creep.memory.role == 'remoteDropMiner');
         haulersForSource = _.filter(haulers, (creep) => creep.memory.source.roomName == source.pos.roomName && creep.memory.role == 'remoteHauler');
         claimersForSource = _.filter(claimers, (creep) => creep.memory.source.roomName == source.pos.roomName && creep.memory.role == 'claimer');
-        // Find the number of non-wall tiles around the source
+        // Calculate the number of CARRY parts for all haulers present.
+        let haulerCarryParts = 0;
+        for (let i = 0; i < haulersForSource.length; i++) {
+            haulerCarryParts += haulersForSource[i].getActiveBodyparts(CARRY);
+        }
+        // Calculate the number of WORK parts for all dropMiners present.
+        let dropMinerWorkParts = 0;
+        for (let i = 0; i < dropMinersForSource.length; i++) {
+            dropMinerWorkParts += dropMinersForSource[i].getActiveBodyparts(WORK);
+        }
+        // If room is reserved, CARRY parts is 12, else 6; And WORK parts is 6
+        let maxHaulerCarryParts = 14;
+        let maxDropMinerWorkParts = 6;
+        if (this.room.controller.reservation != undefined) {
+            maxHaulerCarryParts = 25;
+        }
 
         // Use creep memory of source info to check room for number of sources
         let roomSources = Memory.rooms[source.pos.roomName].sources;
@@ -73,44 +100,49 @@ StructureController.prototype.remoteMining = function () {
         let roomSourcesInRoom = _.filter(roomSourcesArray, (source) => source.pos.roomName == source.pos.roomName);
         let sourceCount = roomSourcesInRoom.length;
         // For each source, spawn a dropMiner and a hauler
-        if (dropMinersForSource.length < MAX_DROPMINERS && this.room.energyAvailable >= 300) {
-            console.log('Spawning remoteDropMiner');
-            let body = [MOVE, WORK, WORK];
-            if (this && this.my) {
-                let cost = 250;
-                while (cost + 250 < this.room.energyAvailable) {
-                    body.push(MOVE);
-                    body.push(WORK);
-                    body.push(WORK);
-                    cost += 250;
+
+        for (let i = 0; i < sourcesInRoom.length; i++) {
+            if (dropMinerWorkParts < maxDropMinerWorkParts) {
+                console.log('Spawning remoteDropMiner');
+                let body = [MOVE, WORK, WORK];
+                if (this && this.my) {
+                    let cost = 250;
+                    while (cost + 250 < this.room.energyAvailable && this.room.energyAvailable > this.room.energyCapacityAvailable * 0.75) {
+                        body.push(MOVE);
+                        body.push(WORK);
+                        body.push(WORK);
+                        cost += 250;
+                    }
                 }
+                let newName = 'RemoteDropMiner - ' + Game.time;
+                this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
+                    { memory: { role: 'remoteDropMiner', source: source.pos, home: this.room.name } });
+                break;
             }
-            let newName = 'RemoteDropMiner - ' + Game.time;
-            this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
-                { memory: { role: 'remoteDropMiner', source: source.pos, home: this.room.name } });
-            break;
-        }
-        else if (haulersForSource.length < MAX_HAULERS && this.room.energyAvailable >= 300) {
-            console.log('Spawning remoteHauler');
-            let body = [MOVE, CARRY, MOVE, CARRY];
-            if (this && this.my) {
-                let cost = 100;
-                while (cost + 100 < this.room.energyAvailable) {
-                    body.push(MOVE);
-                    body.push(CARRY);
-                    cost += 100;
+            else if (haulerCarryParts < maxHaulerCarryParts) {
+                // < (this.room.findPath(this.pos, source.pos).length > 55 ? 6 : 0));
+                console.log('Spawning remoteHauler');
+                let body = [MOVE, CARRY, MOVE, CARRY];
+                if (this && this.my) {
+                    let cost = 100;
+                    while (cost + 100 < this.room.energyAvailable) {
+                        body.push(MOVE);
+                        body.push(CARRY);
+                        cost += 100;
+                    }
                 }
+                let newName = 'RemoteHauler - ' + Game.time;
+                this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
+                    { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
+                break;
             }
-            let newName = 'RemoteHauler - ' + Game.time;
-            this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
-                { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
-            break;
-        }
-        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
-            console.log('Spawning claimer');
-            let newName = 'Claimer - ' + Game.time;
-            this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
-                { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
+            if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
+                console.log('Spawning claimer');
+                let newName = 'Claimer - ' + Game.time;
+                this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, MOVE, MOVE, CLAIM], newName,
+                    { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
+                break;
+            }
         }
     }
 };
