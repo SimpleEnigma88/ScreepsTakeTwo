@@ -318,6 +318,7 @@ function pickupOnTheFly(creep) {
     }
 }
 function minerCreep(creep) {
+    pickupOnTheFly(creep);
     // If the creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
@@ -411,7 +412,6 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'filling') {
         repairOnTheFly(creep);
-        pickupOnTheFly(creep);
         // Find all extensions that need energy in the room
         let extensions = creep.room.find(FIND_MY_STRUCTURES, {
             filter: (structure) => {
@@ -586,6 +586,20 @@ function claimCreep(creep) {
 
 function haulerCreep(creep) {
     pickupOnTheFly(creep);
+    let adjacentCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
+        filter: (creep) => {
+            // Check if the creep is a miner or hauler and has capacity for more energy
+            return ((creep.memory.role == 'miner' || creep.memory.role == 'hauler') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
+        }
+    });
+
+    // If there are any, transfer energy to the first one
+    if (adjacentCreeps.length > 0) {
+        if (creep.transfer(adjacentCreeps[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(adjacentCreeps[0]);
+        }
+        return; // Exit the function early so the creep doesn't do anything else this tick
+    }
 
     let spawns = creep.room.find(FIND_MY_SPAWNS, {
         filter: (structure) => {
@@ -845,6 +859,12 @@ function placeExtensions(spawn) {
             return structure.structureType == STRUCTURE_EXTENSION;
         }
     });
+
+    // If construction sites present, return
+    if (constructionSites.length > 0) {
+        return;
+    }
+
     // If the number of extensions and construction sites is less than the number needed, place a construction site
     if (extensions.length + constructionSites.length < numExtensionsNeeded) {
         // Find the best spot for the extension
@@ -852,32 +872,24 @@ function placeExtensions(spawn) {
         spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
     }
 
-    // Place extentions as close to the spawn without any extension touching more than 2 other extensions
     function findBestExtensionSpot(spawn) {
-        let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
-        let bestScore = 0;
-        for (let i = spawn.pos.x - 4; i <= spawn.pos.x + 4; i++) {
-            for (let j = spawn.pos.y - 4; j <= spawn.pos.y + 4; j++) {
-                let pos = new RoomPosition(i, j, spawn.room.name);
-                let structures = pos.lookFor(LOOK_STRUCTURES);
-                let score = 0;
-                if (structures.length == 0) {
-                    let adjacentExtensions = 0;
-                    for (let k = 0; k < extensions.length; k++) {
-                        if (extensions[k].pos.getRangeTo(pos) <= 1) {
-                            adjacentExtensions++;
-                        }
-                    }
-                    score = 9 - adjacentExtensions;
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestSpot = pos;
-                    }
-                }
-            }
-        }
+        // Get all the open spots in the room
+        let openSpots = spawn.room.lookForAtArea(LOOK_TERRAIN, spawn.pos.y - 5, spawn.pos.x - 5, spawn.pos.y + 5, spawn.pos.x + 5, true)
+            .filter(({ terrain }) => terrain === 'plain' || terrain === 'swamp')
+            .map(({ x, y }) => new RoomPosition(x, y, spawn.room.name));
+
+        // Filter out spots that are next to another structure
+        openSpots = openSpots.filter((pos) => {
+            let structures = pos.findInRange(FIND_STRUCTURES, 1);
+            return structures.length < 5;
+        });
+
+        // Find the closest open spot to the spawn
+        let bestSpot = spawn.pos.findClosestByRange(openSpots);
+
         return bestSpot;
     }
+
 
 }
 
