@@ -1,6 +1,6 @@
 const remoteMining = require('remoteMining');
 const MAX_HAULERS = 5;
-const MAX_REMOTE_MINERS = 3;
+const MAX_REMOTE_MINERS = 5;
 function exploreAdjacentRooms(creep) {
     // If creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
@@ -309,16 +309,8 @@ Creep.prototype.doNotIdleOnRoads = function () {
         }
     }
 };
-function pickupOnTheFly(creep) {
-    // Find any dropped resources withing 1 square of this creep
-    let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
-    // If there are dropped resources, pick them up
-    if (droppedResources.length > 0) {
-        creep.pickup(droppedResources[0]);
-    }
-}
+
 function minerCreep(creep) {
-    pickupOnTheFly(creep);
     // If the creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
@@ -331,7 +323,7 @@ function minerCreep(creep) {
     // sort the dropped resources by path distance
     droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     // filter out amounts less than .5 of creep capacity
-    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
+    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .5);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
     // Sort by percentage complete, those closest to completion first
     constructionSites.sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
@@ -396,13 +388,6 @@ function minerCreep(creep) {
                     return;
                 }
             }
-            const storage = creep.room.storage;
-            if (storage) {
-                if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(storage);
-                    return;
-                }
-            }
             // Sort the sources by path distance
             sources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
             if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
@@ -423,7 +408,6 @@ function minerCreep(creep) {
             creep.memory.state = 'mining';
         }
         else {
-            pickupOnTheFly(creep);
             if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawn);
             }
@@ -440,7 +424,6 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'building') {
         repairOnTheFly(creep);
-        pickupOnTheFly(creep);
         let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER;
@@ -450,7 +433,6 @@ function minerCreep(creep) {
         if (containers.length > 0) {
             creep.withdraw(containers[0], RESOURCE_ENERGY);
         }
-
         // If the creep is empty, change the state to 'mining'
         if (creep.store.getUsedCapacity() == 0) {
             creep.memory.state = 'mining';
@@ -468,14 +450,18 @@ function minerCreep(creep) {
     }
     if (creep.memory.state == 'upgrading') {
         repairOnTheFly(creep);
-        pickupOnTheFly(creep);
         // Find any containers within range 1 of this creep
         let containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_CONTAINER;
             }
         });
-
+        // Find any dropped resources withing 1 square of this creep
+        let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
+        // If there are dropped resources, pick them up
+        if (droppedResources.length > 0) {
+            creep.pickup(droppedResources[0]);
+        }
         // If there are containers, withdraw energy from them
         if (containers.length > 0) {
             creep.withdraw(containers[0], RESOURCE_ENERGY);
@@ -553,20 +539,7 @@ function dropCreep(creep) {
     if (creep.harvest(Game.getObjectById(creep.memory.source)) == ERR_NOT_IN_RANGE) {
         creep.moveTo(Game.getObjectById(creep.memory.source));
     }
-    // If a source container exists for this source, move to it and stay on it
-    let source = Game.getObjectById(creep.memory.source);
-    let sourceContainers = source.pos.findInRange(FIND_STRUCTURES, 1, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER;
-        }
-    });
-    if (sourceContainers.length > 0) {
-        creep.moveTo(sourceContainers[0]);
-    }
-    // If the creep is full, drop the energy
-    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-        creep.drop(RESOURCE_ENERGY);
-    }
+
 }
 
 function claimCreep(creep) {
@@ -585,11 +558,10 @@ function claimCreep(creep) {
 }
 
 function haulerCreep(creep) {
-    pickupOnTheFly(creep);
     let adjacentCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
         filter: (creep) => {
             // Check if the creep is a miner or hauler and has capacity for more energy
-            return ((creep.memory.role == 'miner' || creep.memory.role == 'hauler') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
+            return ((creep.memory.role == 'miner') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
         }
     });
 
@@ -606,7 +578,7 @@ function haulerCreep(creep) {
             return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
-    let storage = creep.room.storage;
+
     let spawnContainers = [];
     for (let i = 0; i < spawns.length; i++) {
         let spawn = spawns[i];
@@ -625,10 +597,10 @@ function haulerCreep(creep) {
     extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * 0.1);
+    droppedResources = droppedResources.filter(resource => resource.amount > 50);
     // sort the dropped resources by amount
-    const weightAmount = 0.3; // weight for the amount of resources
-    const weightDistance = 5.25; // weight for the distance from the creep
+    const weightAmount = 0.5; // weight for the amount of resources
+    const weightDistance = 4; // weight for the distance from the creep
 
     droppedResources.sort((a, b) => {
         const distanceToA = creep.pos.getRangeTo(a);
@@ -650,15 +622,10 @@ function haulerCreep(creep) {
         let source = sources[i];
         sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > creep.store.getFreeCapacity(RESOURCE_ENERGY);
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
             }
         }));
     }
-    let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-        }
-    }) : [];
 
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
@@ -689,33 +656,14 @@ function haulerCreep(creep) {
                 return;
             }
         }
-        if ((extensions.length || spawns.length || controllerContainers.length) && storage) {
-            if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(storage);
-                return;
-            }
-        }
-        if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
-            if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(spawnContainers[0]);
-                return;
-            }
-        }
-        if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
-            if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(controllerContainers[0]);
-                return;
-            }
-        }
     }
     if (creep.memory.state == 'hauling') {
-
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
         let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1800;
             }
         }) : [];
         if (spawns.length > 0) {
@@ -742,12 +690,6 @@ function haulerCreep(creep) {
                 return;
             }
         }
-        if (storage) {
-            if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(storage);
-                return;
-            }
-        }
     }
 }
 
@@ -768,7 +710,7 @@ function placeContainer(structure) {
 
 // Function to place a container at a controller 2 squares away, but in the direction of the sources
 function placeContainerAtController(controller) {
-    if (Game.time % 10 == 0 && controller.level < 2) {
+    if (controller.level < 3) {
         return;
     }
     // If there are already a total of two containers or construction sites within range 2 of the controller, return
@@ -798,9 +740,6 @@ function placeContainerAtController(controller) {
             }
         }
     }
-    // Sort by the spot closest to the oldest spawn
-    let spawns = controller.room.find(FIND_MY_SPAWNS);
-    openSpots.sort((a, b) => spawns[0].pos.getRangeTo(a) - spawns[0].pos.getRangeTo(b));
 
     // Pick one of these spots that is closest to the two sources
     let sources = controller.room.find(FIND_SOURCES);
@@ -859,12 +798,6 @@ function placeExtensions(spawn) {
             return structure.structureType == STRUCTURE_EXTENSION;
         }
     });
-
-    // If construction sites present, return
-    if (constructionSites.length > 0) {
-        return;
-    }
-
     // If the number of extensions and construction sites is less than the number needed, place a construction site
     if (extensions.length + constructionSites.length < numExtensionsNeeded) {
         // Find the best spot for the extension
@@ -872,24 +805,32 @@ function placeExtensions(spawn) {
         spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
     }
 
+    // Place extentions as close to the spawn without any extension touching more than 2 other extensions
     function findBestExtensionSpot(spawn) {
-        // Get all the open spots in the room
-        let openSpots = spawn.room.lookForAtArea(LOOK_TERRAIN, spawn.pos.y - 5, spawn.pos.x - 5, spawn.pos.y + 5, spawn.pos.x + 5, true)
-            .filter(({ terrain }) => terrain === 'plain' || terrain === 'swamp')
-            .map(({ x, y }) => new RoomPosition(x, y, spawn.room.name));
-
-        // Filter out spots that are next to another structure
-        openSpots = openSpots.filter((pos) => {
-            let structures = pos.findInRange(FIND_STRUCTURES, 1);
-            return structures.length < 5;
-        });
-
-        // Find the closest open spot to the spawn
-        let bestSpot = spawn.pos.findClosestByRange(openSpots);
-
+        let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
+        let bestScore = 0;
+        for (let i = spawn.pos.x - 4; i <= spawn.pos.x + 4; i++) {
+            for (let j = spawn.pos.y - 4; j <= spawn.pos.y + 4; j++) {
+                let pos = new RoomPosition(i, j, spawn.room.name);
+                let structures = pos.lookFor(LOOK_STRUCTURES);
+                let score = 0;
+                if (structures.length == 0) {
+                    let adjacentExtensions = 0;
+                    for (let k = 0; k < extensions.length; k++) {
+                        if (extensions[k].pos.getRangeTo(pos) <= 1) {
+                            adjacentExtensions++;
+                        }
+                    }
+                    score = 9 - adjacentExtensions;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestSpot = pos;
+                    }
+                }
+            }
+        }
         return bestSpot;
     }
-
 
 }
 
@@ -897,7 +838,7 @@ function placeExtensions(spawn) {
 const NUM_CREEPS = {
 
     'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
-    'miner': [12, 10, 10, 10, 10, 8, 8, 8],
+    'miner': [12, 12, 10, 6, 6, 5, 4, 4],
     'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
     'builder': [5, 5, 5, 5, 5, 5, 5, 5],
     'dropMiner': [4, 4, 3, 2, 1, 1, 1, 1],
@@ -950,8 +891,7 @@ function displayControllerProgress(controller) {
 }
 
 module.exports.loop = function () {
-    console.log('Tick: ' + Game.time + ' || Bucket: ' + Game.cpu.bucket);
-    const cpuUsedStart = Game.cpu.getUsed();
+    console.log('Tick: ' + Game.time);
     for (let roomName in Game.rooms) {
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
@@ -1084,7 +1024,7 @@ module.exports.loop = function () {
                 body.push(WORK);
                 cost += 250;
                 // break after # of work parts is >= 5
-                if (body.length > 9) {
+                if (body.length > 6) {
                     break;
                 }
             }
@@ -1161,6 +1101,4 @@ module.exports.loop = function () {
         }
 
     };
-    const cpuUsedEnd = Game.cpu.getUsed();
-    console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
 };
