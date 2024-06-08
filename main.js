@@ -722,7 +722,7 @@ function haulerCreep(creep) {
                 return;
             }
         }
-        if ((extensions.length || spawns.length || controllerContainers.length) && storage) {
+        if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage) {
             if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(storage);
                 return;
