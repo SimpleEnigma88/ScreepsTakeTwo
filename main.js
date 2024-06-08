@@ -436,6 +436,19 @@ function minerCreep(creep) {
                     return;
                 }
             }
+            if (spawnContainers.length > 0) {
+                if (creep.harvest(spawnContainers[0]) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(spawnContainers[0]);
+                    return;
+                }
+            }
+            const storage = creep.room.storage;
+            if (storage) {
+                if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(storage);
+                    return;
+                }
+            }
             // Sort the sources by path distance
             sources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
             if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
@@ -674,13 +687,11 @@ function haulerCreep(creep) {
             }
         }));
     }
-    let towers = creep.room.find(FIND_MY_STRUCTURES, {
+    let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
         }
-    });
-    towers.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-
+    }) : [];
 
     if (creep.room.name != creep.memory.home) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
@@ -705,15 +716,27 @@ function haulerCreep(creep) {
                 return;
             }
         }
-        if (spawnContainers.length > 0) {
-            if (creep.harvest(spawnContainers[0]) == ERR_NOT_IN_RANGE) {
+        if (sourceContainers.length > 0) {
+            if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sourceContainers[0]);
+                return;
+            }
+        }
+        if ((extensions.length || spawns.length || controllerContainers.length) && storage) {
+            if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(storage);
+                return;
+            }
+        }
+        if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
+            if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
                 return;
             }
         }
-        if (sourceContainers.length > 0) {
-            if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sourceContainers[0]);
+        if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
+            if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(controllerContainers[0]);
                 return;
             }
         }
@@ -1194,7 +1217,4 @@ module.exports.loop = function () {
     };
     const cpuUsedEnd = Game.cpu.getUsed();
     console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
-    // if (Game.cpu.bucket == 10000) {
-    //     Game.cpu.generatePixel();
-    // }
 };
