@@ -658,7 +658,7 @@ function haulerCreep(creep) {
     extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
 
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    droppedResources = droppedResources.filter(resource => resource.amount > 0);
+    droppedResources = droppedResources.filter(resource => resource.amount > 100);
     // sort the dropped resources by amount
     const weightAmount = 0.3; // weight for the amount of resources
     const weightDistance = 5.25; // weight for the distance from the creep
