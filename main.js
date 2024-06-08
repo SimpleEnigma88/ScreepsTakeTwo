@@ -694,47 +694,56 @@ function haulerCreep(creep) {
     }) : [];
 
     if (creep.room.name != creep.memory.home) {
+        console.log("Moving to home room");
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
         return;
     }
     if (creep.memory.state == undefined) {
+        console.log("Setting state to loading");
         creep.memory.state = 'loading';
     }
     if (creep.memory.state == 'loading') {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+            console.log("Switching state to hauling");
             creep.memory.state = 'hauling';
         }
         if (droppedResources.length > 0) {
+            console.log("Picking up dropped resources");
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(droppedResources[0]);
                 return;
             }
         }
         if (tombstones.length > 0) {
+            console.log("Withdrawing from tombstones");
             if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(tombstones[0]);
                 return;
             }
         }
         if (sourceContainers.length > 0) {
+            console.log("Withdrawing from source containers");
             if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceContainers[0]);
                 return;
             }
         }
         if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage) {
+            console.log("Withdrawing from storage");
             if (creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.storage);
                 return;
             }
         }
         if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
+            console.log("Withdrawing from spawn containers");
             if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
                 return;
             }
         }
         if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
+            console.log("Withdrawing from controller containers");
             if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(controllerContainers[0]);
                 return;
