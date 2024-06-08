@@ -763,6 +763,11 @@ function haulerCreep(creep) {
                 return;
             }
         }
+        let towers = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            }
+        });
         if (towers.length > 0) {
             if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(towers[0]);
