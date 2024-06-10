@@ -1228,7 +1228,7 @@ module.exports.loop = function () {
 
     };
     // If game world is not simulation
-    if (Game.shard != 'sim') {
+    if (Game.shard !== 'sim') {
         // if bucket == 10,000, generate pixel
         if (Game.cpu.bucket == 10000) {
             Game.cpu.generatePixel();
