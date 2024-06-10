@@ -607,643 +607,644 @@ function dropCreep(creep) {
                 return structure.structureType == STRUCTURE_CONTAINER;
             }
         });
-        if (container.length > 0) {
-            creep.moveTo(container[0]);
+    };
+    if (container.length > 0) {
+        creep.moveTo(container[0]);
+    }
+}
+
+function claimCreep(creep) {
+    // If not in source room, move to source room
+    if (creep.room.name != creep.memory.source.roomName) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.source.roomName));
+        return;
+    }
+    // If not at the controller, move to the controller
+    if (creep.pos.getRangeTo(creep.room.controller) > 1) {
+        creep.moveTo(creep.room.controller);
+        return;
+    }
+    // reserve the controller
+    creep.reserveController(creep.room.controller);
+}
+
+function haulerCreep(creep) {
+    let adjacentCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
+        filter: (creep) => {
+            // Check if the creep is a miner or hauler and has capacity for more energy
+            return ((creep.memory.role == 'miner') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
         }
+    });
+
+    // If there are any, transfer energy to the first one
+    if (adjacentCreeps.length > 0) {
+        if (creep.transfer(adjacentCreeps[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(adjacentCreeps[0]);
+        }
+        return; // Exit the function early so the creep doesn't do anything else this tick
+    }
+    pickupOnTheFly(creep);
+
+    let spawns = creep.room.find(FIND_MY_SPAWNS, {
+        filter: (structure) => {
+            return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+        }
+    });
+
+    let spawnContainers = [];
+    for (let i = 0; i < spawns.length; i++) {
+        let spawn = spawns[i];
+        spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getCapacity(RESOURCE_ENERGY) > 100;
+            }
+        }));
     }
 
-    function claimCreep(creep) {
-        // If not in source room, move to source room
-        if (creep.room.name != creep.memory.source.roomName) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.source.roomName));
-            return;
+    let extensions = creep.room.find(FIND_MY_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
-        // If not at the controller, move to the controller
-        if (creep.pos.getRangeTo(creep.room.controller) > 1) {
-            creep.moveTo(creep.room.controller);
-            return;
-        }
-        // reserve the controller
-        creep.reserveController(creep.room.controller);
+    });
+    extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+
+    let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
+    droppedResources = droppedResources.filter(resource => resource.amount > 100);
+    // sort the dropped resources by amount
+    const weightAmount = 0.3; // weight for the amount of resources
+    const weightDistance = 5.25; // weight for the distance from the creep
+
+    droppedResources.sort((a, b) => {
+        const distanceToA = creep.pos.getRangeTo(a);
+        const distanceToB = creep.pos.getRangeTo(b);
+
+        const scoreA = weightAmount * a.amount - weightDistance * distanceToA;
+        const scoreB = weightAmount * b.amount - weightDistance * distanceToB;
+
+        return scoreB - scoreA; // sort in descending order of score
+    });
+    let tombstones = creep.room.find(FIND_TOMBSTONES);
+    tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
+    tombstones.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+    // Find all sources
+    let sources = creep.room.find(FIND_SOURCES);
+    // Find all containers within range 1 of the sources
+    let sourceContainers = [];
+    for (let i = 0; i < sources.length; i++) {
+        let source = sources[i];
+        sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+            }
+        }));
     }
-
-    function haulerCreep(creep) {
-        let adjacentCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
-            filter: (creep) => {
-                // Check if the creep is a miner or hauler and has capacity for more energy
-                return ((creep.memory.role == 'miner') && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 24);
-            }
-        });
-
-        // If there are any, transfer energy to the first one
-        if (adjacentCreeps.length > 0) {
-            if (creep.transfer(adjacentCreeps[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(adjacentCreeps[0]);
-            }
-            return; // Exit the function early so the creep doesn't do anything else this tick
+    sourceContainers.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
+    let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0;
         }
-        pickupOnTheFly(creep);
+    }) : [];
 
-        let spawns = creep.room.find(FIND_MY_SPAWNS, {
-            filter: (structure) => {
-                return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-            }
-        });
-
-        let spawnContainers = [];
-        for (let i = 0; i < spawns.length; i++) {
-            let spawn = spawns[i];
-            spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_CONTAINER && structure.store.getCapacity(RESOURCE_ENERGY) > 100;
-                }
-            }));
+    if (creep.room.name != creep.memory.home) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        return;
+    }
+    if (creep.memory.state == undefined) {
+        creep.memory.state = 'loading';
+    }
+    if (creep.memory.state == 'loading') {
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+            creep.memory.state = 'hauling';
         }
-
-        let extensions = creep.room.find(FIND_MY_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_EXTENSION && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+        if (droppedResources.length > 0) {
+            if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(droppedResources[0]);
+                return;
             }
-        });
-        extensions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-
-        let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-        droppedResources = droppedResources.filter(resource => resource.amount > 100);
-        // sort the dropped resources by amount
-        const weightAmount = 0.3; // weight for the amount of resources
-        const weightDistance = 5.25; // weight for the distance from the creep
-
-        droppedResources.sort((a, b) => {
-            const distanceToA = creep.pos.getRangeTo(a);
-            const distanceToB = creep.pos.getRangeTo(b);
-
-            const scoreA = weightAmount * a.amount - weightDistance * distanceToA;
-            const scoreB = weightAmount * b.amount - weightDistance * distanceToB;
-
-            return scoreB - scoreA; // sort in descending order of score
-        });
-        let tombstones = creep.room.find(FIND_TOMBSTONES);
-        tombstones = tombstones.filter(tombstone => tombstone.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-        tombstones.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-        // Find all sources
-        let sources = creep.room.find(FIND_SOURCES);
-        // Find all containers within range 1 of the sources
-        let sourceContainers = [];
-        for (let i = 0; i < sources.length; i++) {
-            let source = sources[i];
-            sourceContainers = sourceContainers.concat(source.pos.findInRange(FIND_STRUCTURES, 1, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-                }
-            }));
         }
-        sourceContainers.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
-        let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0;
+        else if (tombstones.length > 0) {
+            if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(tombstones[0]);
+                return;
             }
-        }) : [];
-
-        if (creep.room.name != creep.memory.home) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
-            return;
         }
-        if (creep.memory.state == undefined) {
+        else if (sourceContainers.length > 0) {
+            if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sourceContainers[0]);
+                return;
+            }
+        }
+        else if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage && creep.room.storage[RESOURCE_ENERGY] > 0) {
+            if (creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.storage);
+                return;
+            }
+        }
+        else if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
+            if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawnContainers[0]);
+                return;
+            }
+        }
+        else if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
+            if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(controllerContainers[0]);
+                return;
+            }
+        }
+    }
+    if (creep.memory.state == 'hauling') {
+
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'loading';
         }
-        if (creep.memory.state == 'loading') {
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-                creep.memory.state = 'hauling';
+        let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
             }
-            if (droppedResources.length > 0) {
-                if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(droppedResources[0]);
-                    return;
-                }
-            }
-            else if (tombstones.length > 0) {
-                if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(tombstones[0]);
-                    return;
-                }
-            }
-            else if (sourceContainers.length > 0) {
-                if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(sourceContainers[0]);
-                    return;
-                }
-            }
-            else if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage && creep.room.storage[RESOURCE_ENERGY] > 0) {
-                if (creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(creep.room.storage);
-                    return;
-                }
-            }
-            else if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
-                if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(spawnContainers[0]);
-                    return;
-                }
-            }
-            else if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
-                if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(controllerContainers[0]);
-                    return;
-                }
+        }) : [];
+        if (spawns.length > 0) {
+            if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawns[0]);
+                return;
             }
         }
-        if (creep.memory.state == 'hauling') {
-
-            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
-                creep.memory.state = 'loading';
+        if (extensions.length > 0) {
+            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(extensions[0]);
+                return;
             }
-            let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
-                }
-            }) : [];
-            if (spawns.length > 0) {
-                if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(spawns[0]);
-                    return;
-                }
+        }
+        let towers = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
-            if (extensions.length > 0) {
-                if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(extensions[0]);
-                    return;
-                }
+        });
+        if (towers.length > 0) {
+            if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(towers[0]);
+                return;
             }
-            let towers = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                }
-            });
-            if (towers.length > 0) {
-                if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(towers[0]);
-                    return;
-                }
+        }
+        if (controllerContainers.length > 0) {
+            if (creep.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(controllerContainers[0]);
+                return;
             }
-            if (controllerContainers.length > 0) {
-                if (creep.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(controllerContainers[0]);
-                    return;
-                }
-            }
-            if (spawnContainers.length > 0) {
-                if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(spawnContainers[0]);
-                    return;
-                }
+        }
+        if (spawnContainers.length > 0) {
+            if (creep.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawnContainers[0]);
+                return;
             }
         }
     }
+}
 
 
-    function placeContainer(structure) {
+function placeContainer(structure) {
 
-        // if a container or construction site already exists in target position, return
+    // if a container or construction site already exists in target position, return
 
-        let structurePos = structure.pos;
-        let containerPos = new RoomPosition(structurePos.x - 1, structurePos.y - 1, structurePos.roomName);
-        let terrain = containerPos.lookFor(LOOK_TERRAIN);
-        let structures = containerPos.lookFor(LOOK_STRUCTURES);
-        if (terrain[0] == 'wall' || structures.length > 0) {
-            return;
+    let structurePos = structure.pos;
+    let containerPos = new RoomPosition(structurePos.x - 1, structurePos.y - 1, structurePos.roomName);
+    let terrain = containerPos.lookFor(LOOK_TERRAIN);
+    let structures = containerPos.lookFor(LOOK_STRUCTURES);
+    if (terrain[0] == 'wall' || structures.length > 0) {
+        return;
+    }
+    structure.room.createConstructionSite(containerPos, STRUCTURE_CONTAINER);
+}
+
+// Function to place a container at a controller 2 squares away, but in the direction of the sources
+function placeContainerAtController(controller) {
+    if (Game.time % 10 == 0 && controller.level < 2) {
+        return;
+    }
+    // If there are already a total of two containers or construction sites within range 2 of the controller, return
+    let containers = controller.pos.findInRange(FIND_STRUCTURES, 2, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_CONTAINER;
         }
-        structure.room.createConstructionSite(containerPos, STRUCTURE_CONTAINER);
+    });
+    let constructionSites = controller.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_CONTAINER;
+        }
+    });
+    if (containers.length + constructionSites.length >= 2) {
+        return;
     }
 
-    // Function to place a container at a controller 2 squares away, but in the direction of the sources
-    function placeContainerAtController(controller) {
-        if (Game.time % 10 == 0 && controller.level < 2) {
-            return;
-        }
-        // If there are already a total of two containers or construction sites within range 2 of the controller, return
-        let containers = controller.pos.findInRange(FIND_STRUCTURES, 2, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER;
+    // Find all open spots in range 2 of the controller
+    let openSpots = [];
+    for (let i = -2; i <= 2; i++) {
+        for (let j = -2; j <= 2; j++) {
+            let pos = new RoomPosition(controller.pos.x + i, controller.pos.y + j, controller.room.name);
+            let terrain = pos.lookFor(LOOK_TERRAIN);
+            let structures = pos.lookFor(LOOK_STRUCTURES);
+            if (terrain[0] != 'wall' && structures.length == 0) {
+                openSpots.push(pos);
             }
-        });
-        let constructionSites = controller.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER;
-            }
-        });
-        if (containers.length + constructionSites.length >= 2) {
-            return;
         }
+    }
+    // Sort by the spot closest to the oldest spawn
+    let spawns = controller.room.find(FIND_MY_SPAWNS);
+    openSpots.sort((a, b) => spawns[0].pos.getRangeTo(a) - spawns[0].pos.getRangeTo(b));
 
-        // Find all open spots in range 2 of the controller
-        let openSpots = [];
-        for (let i = -2; i <= 2; i++) {
-            for (let j = -2; j <= 2; j++) {
-                let pos = new RoomPosition(controller.pos.x + i, controller.pos.y + j, controller.room.name);
-                let terrain = pos.lookFor(LOOK_TERRAIN);
+    // Pick one of these spots that is closest to the two sources
+    let sources = controller.room.find(FIND_SOURCES);
+    let bestSpot = openSpots[0];
+    let bestDistance = 1000;
+    for (let i = 0; i < openSpots.length; i++) {
+        let distance = 0;
+        for (let j = 0; j < sources.length; j++) {
+            distance += openSpots[i].getRangeTo(sources[j]);
+        }
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestSpot = openSpots[i];
+        }
+    }
+    controller.room.createConstructionSite(bestSpot, STRUCTURE_CONTAINER);
+}
+
+function placeExtensions(spawn) {
+    let controller = spawn.room.controller;
+    let numExtensionsNeeded = 0;
+    if (controller.level == 1) {
+        numExtensionsNeeded = 0;
+    }
+    else if (controller.level == 2) {
+        numExtensionsNeeded = 5;
+    }
+    else if (controller.level == 3) {
+        numExtensionsNeeded = 10;
+    }
+    else if (controller.level == 4) {
+        numExtensionsNeeded = 20;
+    }
+    else if (controller.level == 5) {
+        numExtensionsNeeded = 30;
+    }
+    else if (controller.level == 6) {
+        numExtensionsNeeded = 40;
+    }
+    else if (controller.level == 7) {
+        numExtensionsNeeded = 50;
+    }
+    else if (controller.level == 8) {
+        numExtensionsNeeded = 60;
+    }
+
+    // Find current number of extensions
+    let extensions = spawn.room.find(FIND_MY_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_EXTENSION;
+        }
+    });
+    // Find construction sites for extensions
+    let constructionSites = spawn.room.find(FIND_MY_CONSTRUCTION_SITES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_EXTENSION;
+        }
+    });
+    // If the number of extensions and construction sites is less than the number needed, place a construction site
+    if (extensions.length + constructionSites.length < numExtensionsNeeded) {
+        // Find the best spot for the extension
+        let bestSpot = findBestExtensionSpot(spawn);
+        spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
+    }
+
+    // Place extentions as close to the spawn without any extension touching more than 2 other extensions
+    function findBestExtensionSpot(spawn) {
+        let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
+        let bestScore = 0;
+        for (let i = spawn.pos.x - 4; i <= spawn.pos.x + 4; i++) {
+            for (let j = spawn.pos.y - 4; j <= spawn.pos.y + 4; j++) {
+                let pos = new RoomPosition(i, j, spawn.room.name);
                 let structures = pos.lookFor(LOOK_STRUCTURES);
-                if (terrain[0] != 'wall' && structures.length == 0) {
-                    openSpots.push(pos);
-                }
-            }
-        }
-        // Sort by the spot closest to the oldest spawn
-        let spawns = controller.room.find(FIND_MY_SPAWNS);
-        openSpots.sort((a, b) => spawns[0].pos.getRangeTo(a) - spawns[0].pos.getRangeTo(b));
-
-        // Pick one of these spots that is closest to the two sources
-        let sources = controller.room.find(FIND_SOURCES);
-        let bestSpot = openSpots[0];
-        let bestDistance = 1000;
-        for (let i = 0; i < openSpots.length; i++) {
-            let distance = 0;
-            for (let j = 0; j < sources.length; j++) {
-                distance += openSpots[i].getRangeTo(sources[j]);
-            }
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                bestSpot = openSpots[i];
-            }
-        }
-        controller.room.createConstructionSite(bestSpot, STRUCTURE_CONTAINER);
-    }
-
-    function placeExtensions(spawn) {
-        let controller = spawn.room.controller;
-        let numExtensionsNeeded = 0;
-        if (controller.level == 1) {
-            numExtensionsNeeded = 0;
-        }
-        else if (controller.level == 2) {
-            numExtensionsNeeded = 5;
-        }
-        else if (controller.level == 3) {
-            numExtensionsNeeded = 10;
-        }
-        else if (controller.level == 4) {
-            numExtensionsNeeded = 20;
-        }
-        else if (controller.level == 5) {
-            numExtensionsNeeded = 30;
-        }
-        else if (controller.level == 6) {
-            numExtensionsNeeded = 40;
-        }
-        else if (controller.level == 7) {
-            numExtensionsNeeded = 50;
-        }
-        else if (controller.level == 8) {
-            numExtensionsNeeded = 60;
-        }
-
-        // Find current number of extensions
-        let extensions = spawn.room.find(FIND_MY_STRUCTURES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_EXTENSION;
-            }
-        });
-        // Find construction sites for extensions
-        let constructionSites = spawn.room.find(FIND_MY_CONSTRUCTION_SITES, {
-            filter: (structure) => {
-                return structure.structureType == STRUCTURE_EXTENSION;
-            }
-        });
-        // If the number of extensions and construction sites is less than the number needed, place a construction site
-        if (extensions.length + constructionSites.length < numExtensionsNeeded) {
-            // Find the best spot for the extension
-            let bestSpot = findBestExtensionSpot(spawn);
-            spawn.room.createConstructionSite(bestSpot, STRUCTURE_EXTENSION);
-        }
-
-        // Place extentions as close to the spawn without any extension touching more than 2 other extensions
-        function findBestExtensionSpot(spawn) {
-            let bestSpot = new RoomPosition(spawn.pos.x + 4, spawn.pos.y, spawn.room.name);
-            let bestScore = 0;
-            for (let i = spawn.pos.x - 4; i <= spawn.pos.x + 4; i++) {
-                for (let j = spawn.pos.y - 4; j <= spawn.pos.y + 4; j++) {
-                    let pos = new RoomPosition(i, j, spawn.room.name);
-                    let structures = pos.lookFor(LOOK_STRUCTURES);
-                    let score = 0;
-                    if (structures.length == 0) {
-                        let adjacentExtensions = 0;
-                        for (let k = 0; k < extensions.length; k++) {
-                            if (extensions[k].pos.getRangeTo(pos) <= 1) {
-                                adjacentExtensions++;
-                            }
+                let score = 0;
+                if (structures.length == 0) {
+                    let adjacentExtensions = 0;
+                    for (let k = 0; k < extensions.length; k++) {
+                        if (extensions[k].pos.getRangeTo(pos) <= 1) {
+                            adjacentExtensions++;
                         }
-                        score = 9 - adjacentExtensions;
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestSpot = pos;
-                        }
+                    }
+                    score = 9 - adjacentExtensions;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestSpot = pos;
                     }
                 }
             }
-            return bestSpot;
         }
-
+        return bestSpot;
     }
 
-    // Constant containing the number of expected creeps for each role by room level
-    const NUM_CREEPS = {
+}
 
-        'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
-        'miner': [12, 12, 10, 6, 6, 5, 4, 4],
-        'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
-        'builder': [5, 5, 5, 5, 5, 5, 5, 5],
-        'dropMiner': [4, 4, 3, 2, 1, 1, 1, 1],
-    };
+// Constant containing the number of expected creeps for each role by room level
+const NUM_CREEPS = {
 
-    function displayEnergy(obj) {
-        let energy, energyMax;
+    'scout': [1, 1, 1, 1, 1, 1, 1, 1], // [RCL 1, RCL 2, RCL 3, RCL 4, RCL 5, RCL 6, RCL 7, RCL 8,]
+    'miner': [12, 12, 10, 6, 6, 5, 4, 4],
+    'upgrader': [5, 5, 5, 5, 5, 5, 5, 5],
+    'builder': [5, 5, 5, 5, 5, 5, 5, 5],
+    'dropMiner': [4, 4, 3, 2, 1, 1, 1, 1],
+};
 
-        if (obj.store) {
-            energy = obj.store.getUsedCapacity(RESOURCE_ENERGY) > 0 ? obj.store.getUsedCapacity(RESOURCE_ENERGY) : obj.energy;
-            energyMax = obj.store.getCapacity(RESOURCE_ENERGY) > 0 ? obj.store.getCapacity(RESOURCE_ENERGY) : obj.energyCapacity;
-        } else if (obj.energy !== undefined && obj.energyCapacity !== undefined) {
-            energy = obj.energy;
-            energyMax = obj.energyCapacity;
-        } else {
-            return; // If neither store nor energy properties exist, exit the function
-        }
+function displayEnergy(obj) {
+    let energy, energyMax;
 
-        let energyPercentage = energy / energyMax;
-        let energyString = '';
-        for (let j = 0; j < 10; j++) {
-            if (j < energyPercentage * 10) {
-                energyString += ':';
-            }
-            else {
-                energyString += '.';
-            }
-        }
-        obj.room.visual.text(energyString, obj.pos.x, obj.pos.y - 1.5, { align: 'center', color: 'yellow' });
+    if (obj.store) {
+        energy = obj.store.getUsedCapacity(RESOURCE_ENERGY) > 0 ? obj.store.getUsedCapacity(RESOURCE_ENERGY) : obj.energy;
+        energyMax = obj.store.getCapacity(RESOURCE_ENERGY) > 0 ? obj.store.getCapacity(RESOURCE_ENERGY) : obj.energyCapacity;
+    } else if (obj.energy !== undefined && obj.energyCapacity !== undefined) {
+        energy = obj.energy;
+        energyMax = obj.energyCapacity;
+    } else {
+        return; // If neither store nor energy properties exist, exit the function
     }
 
-    function displayControllerProgress(controller) {
-        // If controller is not mine, return
-        if (!controller.my || !controller) {
-            return;
+    let energyPercentage = energy / energyMax;
+    let energyString = '';
+    for (let j = 0; j < 10; j++) {
+        if (j < energyPercentage * 10) {
+            energyString += ':';
         }
-        let progress = controller.progress;
-        let progressTotal = controller.progressTotal;
-        let progressPercentage = progress / progressTotal;
-        let progressString = '';
-        for (let j = 0; j < 10; j++) {
-            if (j < progressPercentage * 10) {
-                progressString += ':';
-            }
-            else {
-                progressString += '.';
-            }
+        else {
+            energyString += '.';
         }
-        controller.room.visual.text(progressString, controller.pos.x, controller.pos.y - 1.5, { align: 'center', color: 'green' });
     }
+    obj.room.visual.text(energyString, obj.pos.x, obj.pos.y - 1.5, { align: 'center', color: 'yellow' });
+}
 
-    module.exports.loop = function () {
-        console.log('Tick: ' + Game.time + ' || Bucket: ' + Game.cpu.bucket);
-        const cpuUsedStart = Game.cpu.getUsed();
-        for (let roomName in Game.rooms) {
-            // For Each Tower in the room, run the tower code
-            let towers = Game.rooms[roomName].find(FIND_MY_STRUCTURES, {
+function displayControllerProgress(controller) {
+    // If controller is not mine, return
+    if (!controller.my || !controller) {
+        return;
+    }
+    let progress = controller.progress;
+    let progressTotal = controller.progressTotal;
+    let progressPercentage = progress / progressTotal;
+    let progressString = '';
+    for (let j = 0; j < 10; j++) {
+        if (j < progressPercentage * 10) {
+            progressString += ':';
+        }
+        else {
+            progressString += '.';
+        }
+    }
+    controller.room.visual.text(progressString, controller.pos.x, controller.pos.y - 1.5, { align: 'center', color: 'green' });
+}
+
+module.exports.loop = function () {
+    console.log('Tick: ' + Game.time + ' || Bucket: ' + Game.cpu.bucket);
+    const cpuUsedStart = Game.cpu.getUsed();
+    for (let roomName in Game.rooms) {
+        // For Each Tower in the room, run the tower code
+        let towers = Game.rooms[roomName].find(FIND_MY_STRUCTURES, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_TOWER;
+            }
+        });
+        for (let i = 0; i < towers.length; i++) {
+            let tower = towers[i];
+            let closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            if (closestHostile) {
+                tower.attack(closestHostile);
+            }
+            let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return structure.structureType == STRUCTURE_TOWER;
+                    return structure.hits < structure.hitsMax;
                 }
             });
-            for (let i = 0; i < towers.length; i++) {
-                let tower = towers[i];
-                let closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-                if (closestHostile) {
-                    tower.attack(closestHostile);
-                }
-                let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return structure.hits < structure.hitsMax;
-                    }
-                });
-                if (closestDamagedStructure) {
-                    tower.repair(closestDamagedStructure);
+            if (closestDamagedStructure) {
+                tower.repair(closestDamagedStructure);
+            }
+        }
+        let room = Game.rooms[roomName];
+        if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
+            Game.rooms[roomName].controller.remoteMining(roomName);
+            if (Game.rooms[roomName].controller.level > 3) { Game.rooms[roomName].controller.placeRoads(); }
+            placeContainerAtController(Game.rooms[roomName].controller);
+        }
+        // Calculate the number of access points to the sources
+        let sources = room.find(FIND_SOURCES);
+        let accessPoints = 0;
+        for (let i = 0; i < sources.length; i++) {
+            let source = sources[i];
+            let terrain = room.lookForAtArea(LOOK_TERRAIN, source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true);
+            for (let j = 0; j < terrain.length; j++) {
+                if (terrain[j].terrain != 'wall') {
+                    accessPoints++;
                 }
             }
-            let room = Game.rooms[roomName];
-            if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
-                Game.rooms[roomName].controller.remoteMining(roomName);
-                if (Game.rooms[roomName].controller.level > 3) { Game.rooms[roomName].controller.placeRoads(); }
-                placeContainerAtController(Game.rooms[roomName].controller);
+        }
+
+
+        // Find all creeps with the role 'scout'
+        let scouts = _.filter(Game.creeps, (creep) => creep.memory.role == 'scout');
+        let miners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner');
+        let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'dropMiner');
+        let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'hauler');
+        // Find all spawns in the room
+        var spawns = room.find(FIND_MY_SPAWNS);
+        // For each spawn in the room, place a container
+        // For each spawn in the room, place a container
+        for (let i = 0; i < spawns.length; i++) {
+            if (Game.rooms[roomName].controller.level > 3) {
+                placeContainer(spawns[i]);
             }
-            // Calculate the number of access points to the sources
-            let sources = room.find(FIND_SOURCES);
-            let accessPoints = 0;
-            for (let i = 0; i < sources.length; i++) {
-                let source = sources[i];
-                let terrain = room.lookForAtArea(LOOK_TERRAIN, source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true);
-                for (let j = 0; j < terrain.length; j++) {
-                    if (terrain[j].terrain != 'wall') {
-                        accessPoints++;
-                    }
-                }
+            placeExtensions(spawns[i]);
+            // Record the last 1500 ticks of energy in the spawn and if it was spawning each of those ticks or not
+            if (spawns[i].memory.energy == undefined) {
+                spawns[i].memory.energy = [];
+                spawns[i].memory.spawningTicks = [];
+            }
+            spawns[i].memory.energy.push(spawns[i].store.getUsedCapacity(RESOURCE_ENERGY));
+            spawns[i].memory.spawningTicks.push(spawns[i].spawning ? 1 : 0);
+            if (spawns[i].memory.energy.length > 1500) {
+                spawns[i].memory.energy.shift();
+                spawns[i].memory.spawningTicks.shift();
+            }
+
+            // Calculate the percentage of actively spawning ticks
+            let activelySpawningTicks = spawns[i].memory.spawningTicks.reduce((a, b) => a + b, 0);
+            let percentageActivelySpawning = activelySpawningTicks / spawns[i].memory.spawningTicks.length * 100;
+            // Room visual to show the percentage of time the spawn was actively spawning, just ##%
+            room.visual.text(`${percentageActivelySpawning.toFixed(2)}%`, spawns[i].pos.x, spawns[i].pos.y + 2, { align: 'center', color: 'white' });
+            // If age is not save to spawn memory, save the current tick.
+            if (spawns[i].memory.age == undefined) {
+                spawns[i].memory.age = Game.time;
+            }
+            // Room Visual to show the age of the spawn
+            room.visual.text(`Age: ${Game.time - spawns[i].memory.age}`, spawns[i].pos.x, spawns[i].pos.y + 1, { align: 'center', color: 'white' });
+
+            // Room visual using stacked colons to represent the percentage full the spawn is
+
+
+            displayEnergy(spawns[i]);
+            let controller = room.controller;
+            if (controller) {
+                displayControllerProgress(controller);
+            } else {
+                console.log('Controller not found');
+            }
+            // For each source, run displayEnergy
+            for (let j = 0; j < sources.length; j++) {
+                displayEnergy(sources[j]);
             }
 
 
-            // Find all creeps with the role 'scout'
-            let scouts = _.filter(Game.creeps, (creep) => creep.memory.role == 'scout');
-            let miners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner');
-            let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'dropMiner');
-            let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'hauler');
-            // Find all spawns in the room
-            var spawns = room.find(FIND_MY_SPAWNS);
-            // For each spawn in the room, place a container
-            // For each spawn in the room, place a container
-            for (let i = 0; i < spawns.length; i++) {
-                if (Game.rooms[roomName].controller.level > 3) {
-                    placeContainer(spawns[i]);
-                }
-                placeExtensions(spawns[i]);
-                // Record the last 1500 ticks of energy in the spawn and if it was spawning each of those ticks or not
-                if (spawns[i].memory.energy == undefined) {
-                    spawns[i].memory.energy = [];
-                    spawns[i].memory.spawningTicks = [];
-                }
-                spawns[i].memory.energy.push(spawns[i].store.getUsedCapacity(RESOURCE_ENERGY));
-                spawns[i].memory.spawningTicks.push(spawns[i].spawning ? 1 : 0);
-                if (spawns[i].memory.energy.length > 1500) {
-                    spawns[i].memory.energy.shift();
-                    spawns[i].memory.spawningTicks.shift();
-                }
+            let spots = [];
+            let terrain = new Room.Terrain(spawns[i].room.name);
 
-                // Calculate the percentage of actively spawning ticks
-                let activelySpawningTicks = spawns[i].memory.spawningTicks.reduce((a, b) => a + b, 0);
-                let percentageActivelySpawning = activelySpawningTicks / spawns[i].memory.spawningTicks.length * 100;
-                // Room visual to show the percentage of time the spawn was actively spawning, just ##%
-                room.visual.text(`${percentageActivelySpawning.toFixed(2)}%`, spawns[i].pos.x, spawns[i].pos.y + 2, { align: 'center', color: 'white' });
-                // If age is not save to spawn memory, save the current tick.
-                if (spawns[i].memory.age == undefined) {
-                    spawns[i].memory.age = Game.time;
-                }
-                // Room Visual to show the age of the spawn
-                room.visual.text(`Age: ${Game.time - spawns[i].memory.age}`, spawns[i].pos.x, spawns[i].pos.y + 1, { align: 'center', color: 'white' });
-
-                // Room visual using stacked colons to represent the percentage full the spawn is
-
-
-                displayEnergy(spawns[i]);
-                let controller = room.controller;
-                if (controller) {
-                    displayControllerProgress(controller);
-                } else {
-                    console.log('Controller not found');
-                }
-                // For each source, run displayEnergy
-                for (let j = 0; j < sources.length; j++) {
-                    displayEnergy(sources[j]);
-                }
-
-
-                let spots = [];
-                let terrain = new Room.Terrain(spawns[i].room.name);
-
-                for (let x = Math.max(spawns[i].pos.x - 5, 0); x <= Math.min(spawns[i].pos.x + 5, 49); x++) {
-                    for (let y = Math.max(spawns[i].pos.y - 5, 0); y <= Math.min(spawns[i].pos.y + 5, 49); y++) {
-                        if (terrain.get(x, y) == 0) { // 0 means plain, which is walkable
-                            let structures = spawns[i].room.lookForAt(LOOK_STRUCTURES, x, y);
-                            if (structures.length == 0) {
-                                spots.push(new RoomPosition(x, y, spawns[i].room.name));
-                            }
+            for (let x = Math.max(spawns[i].pos.x - 5, 0); x <= Math.min(spawns[i].pos.x + 5, 49); x++) {
+                for (let y = Math.max(spawns[i].pos.y - 5, 0); y <= Math.min(spawns[i].pos.y + 5, 49); y++) {
+                    if (terrain.get(x, y) == 0) { // 0 means plain, which is walkable
+                        let structures = spawns[i].room.lookForAt(LOOK_STRUCTURES, x, y);
+                        if (structures.length == 0) {
+                            spots.push(new RoomPosition(x, y, spawns[i].room.name));
                         }
                     }
                 }
+            }
 
+        }
+        // If there are no miners and there is a spawn, spawn a new miner with minimal body
+        if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
+            var newName = 'Miner - ' + Game.time;
+            spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
+                { memory: { role: 'miner', home: roomName } });
+        }
+        if (dropMiners.length < 1 && spawns.length > 0) {
+            var newName = 'DropMiner - ' + Game.time;
+            spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
+                { memory: { role: 'dropMiner', home: roomName } });
+        }
+        // If there are no scouts and there is a spawn, spawn a new scout
+        if (scouts && scouts.length < 1 && spawns.length > 0) {
+            var newName = 'Scout - ' + Game.time;
+            spawns[0].spawnCreep([MOVE], newName,
+                { memory: { role: 'scout', home: roomName } });
+        }
+        if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && Game.rooms[roomName].controller.level > 1 && haulers.length < MAX_HAULERS && spawns.length > 0) {
+            let body = [MOVE, CARRY, MOVE, CARRY];
+            let cost = 200;
+            while (cost + 100 < room.energyAvailable) {
+                body.push(MOVE);
+                body.push(CARRY);
+                cost += 100;
             }
-            // If there are no miners and there is a spawn, spawn a new miner with minimal body
-            if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
-                var newName = 'Miner - ' + Game.time;
-                spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
-                    { memory: { role: 'miner', home: roomName } });
-            }
-            if (dropMiners.length < 1 && spawns.length > 0) {
-                var newName = 'DropMiner - ' + Game.time;
-                spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
-                    { memory: { role: 'dropMiner', home: roomName } });
-            }
-            // If there are no scouts and there is a spawn, spawn a new scout
-            if (scouts && scouts.length < 1 && spawns.length > 0) {
-                var newName = 'Scout - ' + Game.time;
-                spawns[0].spawnCreep([MOVE], newName,
-                    { memory: { role: 'scout', home: roomName } });
-            }
-            if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && Game.rooms[roomName].controller.level > 1 && haulers.length < MAX_HAULERS && spawns.length > 0) {
-                let body = [MOVE, CARRY, MOVE, CARRY];
-                let cost = 200;
-                while (cost + 100 < room.energyAvailable) {
-                    body.push(MOVE);
-                    body.push(CARRY);
-                    cost += 100;
+            var newName = 'Hauler - ' + Game.time;
+            spawns[0].spawnCreep(body, newName,
+                { memory: { role: 'hauler', home: roomName } });
+        }
+        if (Game.rooms[roomName].controller &&
+            Game.rooms[roomName].controller.my) {
+        }
+        if (Game.rooms[roomName].controller &&
+            Game.rooms[roomName].controller.my &&
+            dropMiners.length < accessPoints &&
+            miners.length > dropMiners.length &&
+            dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1) {
+            body = [MOVE, WORK, WORK];
+            let cost = 250;
+            while (cost + 250 < room.energyAvailable) {
+                body.push(MOVE);
+                body.push(WORK);
+                body.push(WORK);
+                cost += 250;
+                // break after # of work parts is >= 5
+                if (body.length > 6) {
+                    break;
                 }
-                var newName = 'Hauler - ' + Game.time;
-                spawns[0].spawnCreep(body, newName,
-                    { memory: { role: 'hauler', home: roomName } });
             }
-            if (Game.rooms[roomName].controller &&
-                Game.rooms[roomName].controller.my) {
-            }
-            if (Game.rooms[roomName].controller &&
-                Game.rooms[roomName].controller.my &&
-                dropMiners.length < accessPoints &&
-                miners.length > dropMiners.length &&
-                dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1) {
-                body = [MOVE, WORK, WORK];
+            var newName = 'DropMiner - ' + Game.time;
+            spawns[0].spawnCreep(body, newName,
+                { memory: { role: 'dropMiner', home: roomName } });
+        }
+        else if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0 && room.energyAvailable >= room.energyCapacityAvailable * 0.5) {
+            body = [MOVE, MOVE, CARRY, WORK];
+            if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
                 let cost = 250;
                 while (cost + 250 < room.energyAvailable) {
                     body.push(MOVE);
-                    body.push(WORK);
+                    body.push(MOVE);
+                    body.push(CARRY);
                     body.push(WORK);
                     cost += 250;
-                    // break after # of work parts is >= 5
-                    if (body.length > 6) {
-                        break;
-                    }
                 }
-                var newName = 'DropMiner - ' + Game.time;
-                spawns[0].spawnCreep(body, newName,
-                    { memory: { role: 'dropMiner', home: roomName } });
             }
-            else if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0 && room.energyAvailable >= room.energyCapacityAvailable * 0.5) {
-                body = [MOVE, MOVE, CARRY, WORK];
-                if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
-                    let cost = 250;
-                    while (cost + 250 < room.energyAvailable) {
-                        body.push(MOVE);
-                        body.push(MOVE);
-                        body.push(CARRY);
-                        body.push(WORK);
-                        cost += 250;
-                    }
-                }
-                var newName = 'Miner - ' + Game.time;
-                spawns[0].spawnCreep(body, newName,
-                    { memory: { role: 'miner', home: roomName } });
-            }
+            var newName = 'Miner - ' + Game.time;
+            spawns[0].spawnCreep(body, newName,
+                { memory: { role: 'miner', home: roomName } });
+        }
 
-            // Find containers withing range 2 of the controller
-            if (room.controller) {
-                let controllerContainers = room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-                    filter: (structure) => {
-                        return structure.structureType == STRUCTURE_CONTAINER;
-                    }
-                });
-                // For each container, check the surroundings and move any creeps found TODO
-                for (let i = 0; i < controllerContainers.length; i++) {
+        // Find containers withing range 2 of the controller
+        if (room.controller) {
+            let controllerContainers = room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+                filter: (structure) => {
+                    return structure.structureType == STRUCTURE_CONTAINER;
                 }
+            });
+            // For each container, check the surroundings and move any creeps found TODO
+            for (let i = 0; i < controllerContainers.length; i++) {
             }
-            if (room.controller && room.controller.my) {
-                //room.controller.remoteMining();
+        }
+        if (room.controller && room.controller.my) {
+            //room.controller.remoteMining();
+        }
+        // Remove non-existent spawns from memory
+        for (let name in Memory.spawns) {
+            if (!Game.spawns[name]) {
+                delete Memory.spawns[name];
             }
-            // Remove non-existent spawns from memory
-            for (let name in Memory.spawns) {
-                if (!Game.spawns[name]) {
-                    delete Memory.spawns[name];
-                }
+        }
+        // Remove dead creeps from memory
+        for (let name in Memory.creeps) {
+            if (!Game.creeps[name]) {
+                delete Memory.creeps[name];
             }
-            // Remove dead creeps from memory
-            for (let name in Memory.creeps) {
-                if (!Game.creeps[name]) {
-                    delete Memory.creeps[name];
-                }
+        }
+        for (let creepName in Game.creeps) {
+            let creep = Game.creeps[creepName];
+            if (creep.memory.role == 'scout') {
+                exploreAdjacentRooms(creep);
             }
-            for (let creepName in Game.creeps) {
-                let creep = Game.creeps[creepName];
-                if (creep.memory.role == 'scout') {
-                    exploreAdjacentRooms(creep);
-                }
-                if (creep.memory.role == 'miner') {
-                    minerCreep(creep);
-                }
-                if (creep.memory.role == 'dropMiner') {
-                    dropCreep(creep);
-                }
-                if (creep.memory.role == 'hauler') {
-                    haulerCreep(creep);
-                }
-                if (creep.memory.role == 'remoteDropMiner') {
-                    creep.remoteDropMiner();
-                }
-                if (creep.memory.role == 'remoteHauler') {
-                    creep.remoteHauler();
-                }
-                if (creep.memory.role == 'claimer') {
-                    claimCreep(creep);
-                }
+            if (creep.memory.role == 'miner') {
+                minerCreep(creep);
             }
-
-        };
-        // If game world is not simulation
-        if (Game.shard !== 'sim') {
-            // if bucket == 10,000, generate pixel
-            if (Game.cpu.bucket == 10000) {
-                Game.cpu.generatePixel();
+            if (creep.memory.role == 'dropMiner') {
+                dropCreep(creep);
+            }
+            if (creep.memory.role == 'hauler') {
+                haulerCreep(creep);
+            }
+            if (creep.memory.role == 'remoteDropMiner') {
+                creep.remoteDropMiner();
+            }
+            if (creep.memory.role == 'remoteHauler') {
+                creep.remoteHauler();
+            }
+            if (creep.memory.role == 'claimer') {
+                claimCreep(creep);
             }
         }
 
-        const cpuUsedEnd = Game.cpu.getUsed();
-        console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
     };
+    // If game world is not simulation
+    if (Game.shard !== 'sim') {
+        // if bucket == 10,000, generate pixel
+        if (Game.cpu.bucket == 10000) {
+            Game.cpu.generatePixel();
+        }
+    }
+
+    const cpuUsedEnd = Game.cpu.getUsed();
+    console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
+};
