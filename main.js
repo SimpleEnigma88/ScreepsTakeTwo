@@ -607,10 +607,10 @@ function dropCreep(creep) {
                 return structure.structureType == STRUCTURE_CONTAINER;
             }
         });
+        if (container.length > 0) {
+            creep.moveTo(container[0]);
+        }
     };
-    if (container.length > 0) {
-        creep.moveTo(container[0]);
-    }
 }
 
 function claimCreep(creep) {
