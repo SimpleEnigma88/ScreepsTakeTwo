@@ -374,8 +374,8 @@ function minerCreep(creep) {
     // if (Game.room.controller && Game.room.controller.my && Game.room.controller.level > 2) {
     //     droppedResources = [];
     // }
-    // sort the dropped resources by path distance
-    droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+    // sort the dropped resources by amount
+    droppedResources.sort((a, b) => b.amount - a.amount);
     // filter out amounts less than .5 of creep capacity
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
