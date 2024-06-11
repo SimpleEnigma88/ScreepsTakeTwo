@@ -370,6 +370,7 @@ function minerCreep(creep) {
             return creep.memory.role == 'hauler';
         }
     });
+    console.log("CPU Usage before sorting: " + Game.cpu.getUsed());
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY));
     // sort the dropped resources by amount
@@ -385,6 +386,7 @@ function minerCreep(creep) {
 
         return scoreB - scoreA; // sort in descending order of score
     });
+    console.log("CPU Usage after sorting: " + Game.cpu.getUsed());
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
     // Sort by percentage complete, those closest to completion first
     constructionSites.sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
