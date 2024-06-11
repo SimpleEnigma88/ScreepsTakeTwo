@@ -371,12 +371,20 @@ function minerCreep(creep) {
         }
     });
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    // if (Game.room.controller && Game.room.controller.my && Game.room.controller.level > 2) {
-    //     droppedResources = [];
-    // }
+    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY));
     // sort the dropped resources by amount
-    droppedResources.sort((a, b) => b.amount - a.amount);
-    // filter out amounts less than .5 of creep capacity
+    const weightAmount = 0.3; // weight for the amount of resources
+    const weightDistance = 5.25; // weight for the distance from the creep
+
+    droppedResources.sort((a, b) => {
+        const distanceToA = creep.pos.getRangeTo(a);
+        const distanceToB = creep.pos.getRangeTo(b);
+
+        const scoreA = weightAmount * a.amount - weightDistance * distanceToA;
+        const scoreB = weightAmount * b.amount - weightDistance * distanceToB;
+
+        return scoreB - scoreA; // sort in descending order of score
+    });
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
     // Sort by percentage complete, those closest to completion first
@@ -402,7 +410,7 @@ function minerCreep(creep) {
                     return;
                 }
             }
-            if (creep.room.find(FIND_TOMBSTONES).length > 0) {
+            else if (creep.room.find(FIND_TOMBSTONES).length > 0) {
                 let tombstone = creep.room.find(FIND_TOMBSTONES)[0];
                 if (creep.withdraw(tombstone, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(tombstone);
