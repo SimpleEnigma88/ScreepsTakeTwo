@@ -144,7 +144,7 @@ Creep.prototype.remoteHauler = function () {
     }
 
     if (this.memory.state == 'loading') {
-        if (this.store[RESOURCE_ENERGY] == this.store.getCapacity()) {
+        if (this.store[RESOURCE_ENERGY] == this.store.getCapacity(RESOURCE_ENERGY)) {
             this.memory.state = 'hauling';
         }
     }
@@ -375,6 +375,7 @@ function minerCreep(creep) {
         droppedResources = [];
     }
     // sort the dropped resources by path distance
+    droppedResources = droppedResources.filter(resource => resource.amount > 100);
     droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     // filter out amounts less than .5 of creep capacity
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
@@ -430,28 +431,28 @@ function minerCreep(creep) {
                     }
                 }));
             }
+            const storage = creep.room.storage;
+            // Sort the sources by path distance
+            sources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
             if (sourceContainers.length > 0) {
                 if (creep.harvest(sourceContainers[0]) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(sourceContainers[0]);
                     return;
                 }
             }
-            if (spawnContainers.length > 0) {
+            else if (spawnContainers.length > 0) {
                 if (creep.harvest(spawnContainers[0]) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(spawnContainers[0]);
                     return;
                 }
             }
-            const storage = creep.room.storage;
-            if (storage) {
+            else if (storage && storage.store[RESOURCE_ENERGY] > 1000) {
                 if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(storage);
                     return;
                 }
             }
-            // Sort the sources by path distance
-            sources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+            else if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sources[0]);
             }
         }
@@ -466,7 +467,7 @@ function minerCreep(creep) {
             }
         });
         // If the creep is empty, change the state to 'mining'
-        if (creep.store.getUsedCapacity() == 0) {
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.state = 'mining';
         }
         else {
@@ -599,7 +600,17 @@ function dropCreep(creep) {
     if (creep.harvest(Game.getObjectById(creep.memory.source)) == ERR_NOT_IN_RANGE) {
         creep.moveTo(Game.getObjectById(creep.memory.source));
     }
-
+    else if (creep.harvest(Game.getObjectById(creep.memory.source)) == OK) {
+        // If creep is not standing on a container but there is one within 1 range of this source, move to it
+        let container = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_CONTAINER;
+            }
+        });
+        if (container.length > 0) {
+            creep.moveTo(container[0]);
+        }
+    };
 }
 
 function claimCreep(creep) {
@@ -645,7 +656,7 @@ function haulerCreep(creep) {
         let spawn = spawns[i];
         spawnContainers = spawnContainers.concat(spawn.pos.findInRange(FIND_STRUCTURES, 1, {
             filter: (structure) => {
-                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 100;
+                return structure.structureType == STRUCTURE_CONTAINER && structure.store.getCapacity(RESOURCE_ENERGY) > 100;
             }
         }));
     }
@@ -687,63 +698,55 @@ function haulerCreep(creep) {
             }
         }));
     }
+    sourceContainers.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
     let controllerContainers = creep.room.controller ? creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+            return structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0;
         }
     }) : [];
 
     if (creep.room.name != creep.memory.home) {
-        console.log("Moving to home room");
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
         return;
     }
     if (creep.memory.state == undefined) {
-        console.log("Setting state to loading");
         creep.memory.state = 'loading';
     }
     if (creep.memory.state == 'loading') {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-            console.log("Switching state to hauling");
             creep.memory.state = 'hauling';
         }
         if (droppedResources.length > 0) {
-            console.log("Picking up dropped resources");
             if (creep.pickup(droppedResources[0]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(droppedResources[0]);
                 return;
             }
         }
-        if (tombstones.length > 0) {
-            console.log("Withdrawing from tombstones");
+        else if (tombstones.length > 0) {
             if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(tombstones[0]);
                 return;
             }
         }
-        if (sourceContainers.length > 0) {
-            console.log("Withdrawing from source containers");
+        else if (sourceContainers.length > 0) {
             if (creep.withdraw(sourceContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceContainers[0]);
                 return;
             }
         }
-        if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage) {
-            console.log("Withdrawing from storage");
+        else if ((extensions.length || spawns.length || controllerContainers.length) && creep.room.storage && creep.room.storage[RESOURCE_ENERGY] > 0) {
             if (creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.storage);
                 return;
             }
         }
-        if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers) {
-            console.log("Withdrawing from spawn containers");
+        else if ((extensions.length || spawns.length || controllerContainers.length) && spawnContainers.length > 0) {
             if (creep.withdraw(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(spawnContainers[0]);
                 return;
             }
         }
-        if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
-            console.log("Withdrawing from controller containers");
+        else if ((extensions.length || spawns.length || controllerContainers.length) && controllerContainers.length > 0) {
             if (creep.withdraw(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(controllerContainers[0]);
                 return;
@@ -1113,10 +1116,15 @@ module.exports.loop = function () {
 
         }
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
-        if (miners.length < 1 && spawns.length > 0) {
+        if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
             var newName = 'Miner - ' + Game.time;
             spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
                 { memory: { role: 'miner', home: roomName } });
+        }
+        if (dropMiners.length < 1 && spawns.length > 0) {
+            var newName = 'DropMiner - ' + Game.time;
+            spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
+                { memory: { role: 'dropMiner', home: roomName } });
         }
         // If there are no scouts and there is a spawn, spawn a new scout
         else if (scouts && scouts.length < 1 && spawns.length > 0) {
@@ -1226,6 +1234,14 @@ module.exports.loop = function () {
         }
 
     };
+    // If game world is not simulation
+    if (Game.shard !== 'sim') {
+        // if bucket == 10,000, generate pixel
+        if (Game.cpu.bucket == 10000) {
+            Game.cpu.generatePixel();
+        }
+    }
+
     const cpuUsedEnd = Game.cpu.getUsed();
     console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
 };
