@@ -29,8 +29,6 @@ StructureController.prototype.remoteMining = function () {
             i--;
         }
     }
-    // Sort sources by path length from home room controller
-    sources.sort((a, b) => Game.map.findRoute(this.room.name, a.pos.roomName).length - Game.map.findRoute(this.room.name, b.pos.roomName).length);
     // Cut the total number of sources to MAX_REMOTES
     sources = sources.slice(0, MAX_REMOTES);
 
