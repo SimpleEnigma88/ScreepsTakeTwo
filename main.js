@@ -1121,7 +1121,7 @@ module.exports.loop = function () {
             spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
                 { memory: { role: 'miner', home: roomName } });
         }
-        if (dropMiners.length < 1 && spawns.length > 0) {
+        else if (dropMiners.length < 1 && spawns.length > 0) {
             var newName = 'DropMiner - ' + Game.time;
             spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
                 { memory: { role: 'dropMiner', home: roomName } });
@@ -1235,12 +1235,12 @@ module.exports.loop = function () {
 
     };
     // If game world is not simulation
-    if (Game.shard !== 'sim') {
-        // if bucket == 10,000, generate pixel
-        if (Game.cpu.bucket == 10000) {
-            Game.cpu.generatePixel();
-        }
-    }
+    // if (Game.shard !== 'sim') {
+    //     // if bucket == 10,000, generate pixel
+    //     if (Game.cpu.bucket == 10000) {
+    //         Game.cpu.generatePixel();
+    //     }
+    // }
 
     const cpuUsedEnd = Game.cpu.getUsed();
     console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
