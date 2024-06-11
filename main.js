@@ -1,6 +1,6 @@
 const remoteMining = require('remoteMining');
 const MAX_HAULERS = 5;
-const MAX_REMOTE_MINERS = 3;
+const MAX_REMOTE_MINERS = 6;
 function exploreAdjacentRooms(creep) {
     // If creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
@@ -371,11 +371,10 @@ function minerCreep(creep) {
         }
     });
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
-    if (haulerCreeps.length == 0) {
-        droppedResources = [];
-    }
+    // if (Game.room.controller && Game.room.controller.my && Game.room.controller.level > 2) {
+    //     droppedResources = [];
+    // }
     // sort the dropped resources by path distance
-    droppedResources = droppedResources.filter(resource => resource.amount > 100);
     droppedResources.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
     // filter out amounts less than .5 of creep capacity
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
