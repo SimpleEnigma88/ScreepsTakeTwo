@@ -373,8 +373,8 @@ function minerCreep(creep) {
     let droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY));
     // sort the dropped resources by amount
-    const weightAmount = 0.3; // weight for the amount of resources
-    const weightDistance = 5.25; // weight for the distance from the creep
+    const weightAmount = 0.2; // weight for the amount of resources
+    const weightDistance = 25; // weight for the distance from the creep
 
     droppedResources.sort((a, b) => {
         const distanceToA = creep.pos.getRangeTo(a);
@@ -385,7 +385,6 @@ function minerCreep(creep) {
 
         return scoreB - scoreA; // sort in descending order of score
     });
-    droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY) * .1);
     const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
     // Sort by percentage complete, those closest to completion first
     constructionSites.sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
