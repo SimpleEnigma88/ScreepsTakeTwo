@@ -374,7 +374,7 @@ function minerCreep(creep) {
     droppedResources = droppedResources.filter(resource => resource.amount > creep.store.getFreeCapacity(RESOURCE_ENERGY));
     // sort the dropped resources by amount
     const weightAmount = 0.2; // weight for the amount of resources
-    const weightDistance = 25; // weight for the distance from the creep
+    const weightDistance = 10; // weight for the distance from the creep
 
     droppedResources.sort((a, b) => {
         const distanceToA = creep.pos.getRangeTo(a);
