@@ -106,7 +106,7 @@ StructureController.prototype.remoteMining = function () {
                     }
                 }
             }
-            if (!source || !controller || controller.ticksToDowngrade > 4000) {
+            if (!source || !source.pos || !source.room || !source.room.name || !controller || controller.ticksToDowngrade > 4000) {
                 return;
             }
             let newName = 'Claimer - ' + Game.time;
