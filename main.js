@@ -1,6 +1,7 @@
 const remoteMining = require('remoteMining');
 const MAX_HAULERS = 5;
 const MAX_REMOTE_MINERS = 6;
+const Creep = require('./remoteMiningClaimer');
 function exploreAdjacentRooms(creep) {
     // If creep is not home, take it there and return.
     if (creep.room.name != creep.memory.home) {
@@ -1240,7 +1241,7 @@ module.exports.loop = function () {
                 creep.remoteHauler();
             }
             if (creep.memory.role == 'claimer') {
-                claimCreep(creep);
+                Creep.remoteClaim(creep);
             }
         }
 

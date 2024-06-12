@@ -12,3 +12,5 @@ Creep.prototype.remoteClaim = function () {
         }
     }
 };
+
+module.exports = Creep;
