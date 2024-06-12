@@ -102,7 +102,7 @@ StructureController.prototype.remoteMining = function () {
             console.log("Source: " + source);
             if (source) {
                 console.log("Source is defined: " + source.pos.roomName);
-                if (source.room == undefined) {
+                if (!source.pos.roomName in Game.rooms) {
                     console.log("No vision in room: " + source.pos.roomName);
                     continue;
                 }
