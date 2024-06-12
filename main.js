@@ -1125,10 +1125,7 @@ module.exports.loop = function () {
 
         }
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
-        if (Game.time % 3 !== 0) {
-            continue;
-        }
-        else if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
+        if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
             var newName = 'Miner - ' + Game.time;
             spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
                 { memory: { role: 'miner', home: roomName } });
