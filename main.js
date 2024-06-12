@@ -63,14 +63,14 @@ function exploreAdjacentRooms(creep) {
     }
 
     // If there are no valid exits, change creep.memory.home to a random adjacent room.
-    // if (validExits.length == 0) {
-    //     if (exits) {
-    //         let keys = Object.keys(exits);
-    //         creep.memory.home = exits[keys[Math.floor(Math.random() * keys.length)]];
-    //         return;
-    //     } else {
-    //     }
-    // }
+    if (validExits.length == 0) {
+        if (exits) {
+            let keys = Object.keys(exits);
+            creep.memory.home = exits[keys[Math.floor(Math.random() * keys.length)]];
+            return;
+        } else {
+        }
+    }
 
     // Sort validExits by path length
     validExits.sort((a, b) => Game.map.findRoute(creep.room.name, a).length - Game.map.findRoute(creep.room.name, b).length);
