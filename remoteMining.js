@@ -105,20 +105,20 @@ StructureController.prototype.remoteMining = function () {
                 if (!source.room) {
                     console.log("No vision in room: " + source.pos.roomName);
                     // No vision in this room, skip this source or spawn a scout
-                    return;
+                    continue;
                 }
                 if (source.room.controller) {
                     console.log("Controller is defined: " + source.room.controller);
                     controller = source.room.controller;
                     if (controller && controller.ticksToDowngrade > 4000) {
                         console.log("Controller is reserved and above 4000 ticks: " + controller.ticksToDowngrade);
-                        return;
+                        continue;
                     }
                 }
             }
             else {
                 console.log("Source is not defined: " + source);
-                return;
+                continue;
             }
             let newName = 'Claimer - ' + Game.time;
             console.log("Spawning claimer for room: " + source.pos.roomName);
