@@ -102,9 +102,8 @@ StructureController.prototype.remoteMining = function () {
             console.log("Source: " + source);
             if (source) {
                 console.log("Source is defined: " + source.pos.roomName);
-                if (!source.room) {
+                if (source.room == undefined) {
                     console.log("No vision in room: " + source.pos.roomName);
-                    // No vision in this room, skip this source or spawn a scout
                     continue;
                 }
                 if (source.room.controller) {
