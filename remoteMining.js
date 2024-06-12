@@ -35,7 +35,7 @@ StructureController.prototype.remoteMining = function () {
     let claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
     // Remove claimers that have less than 100 ticks to live
     for (let i = 0; i < claimers.length; i++) {
-        if (claimers[i].ticksToLive < 100) {
+        if (claimers[i].ticksToLive < 150) {
             claimers.splice(i, 1);
             i--;
         }
