@@ -1126,7 +1126,7 @@ module.exports.loop = function () {
         }
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
         if (Game.time % 3 !== 0) {
-            break;
+            continue;
         }
         else if (dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
             var newName = 'Miner - ' + Game.time;
