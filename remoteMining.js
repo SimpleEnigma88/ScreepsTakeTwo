@@ -106,8 +106,17 @@ StructureController.prototype.remoteMining = function () {
                     }
                 }
             }
-            if (!source || !source.pos || !source.room || !source.room.name || !controller || controller.ticksToDowngrade > 4000) {
-                return;
+            if (source) {
+                if (!source.room) {
+                    // No vision in this room, skip this source or spawn a scout
+                    return;
+                }
+                if (source.room.controller) {
+                    controller = source.room.controller;
+                    if (controller && controller.ticksToDowngrade > 4000) {
+                        return;
+                    }
+                }
             }
             let newName = 'Claimer - ' + Game.time;
             this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
