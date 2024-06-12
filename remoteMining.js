@@ -1,5 +1,5 @@
 const MAX_REMOTES = 4; // Number of remote sources to mine
-const MAX_CLAIMERS = 0;
+const MAX_CLAIMERS = 1;
 const MAX_DROPMINERS = 1;
 const MAX_HAULERS = 5;
 
@@ -13,13 +13,6 @@ StructureController.prototype.remoteMining = function () {
         if (Memory.rooms[room].sources != undefined) {
             // Concat all sources into one array
             sources = sources.concat(Object.values(Memory.rooms[room].sources));
-        }
-    }
-    // Remove sources that are more than 1 room away
-    for (let i = 0; i < sources.length; i++) {
-        if (Game.map.findRoute(this.room.name, sources[i].pos.roomName).length >= 4) {
-            sources.splice(i, 1);
-            i--;
         }
     }
     // Remove sources that are in the same room as the controller
@@ -103,9 +96,14 @@ StructureController.prototype.remoteMining = function () {
             break;
         }
         if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
+            // if controller is reserved and above 4000 ticks, return
+            let controller = source.room.controller;
+            if (controller && controller.ticksToDowngrade > 4000) {
+                return;
+            }
             let newName = 'Claimer - ' + Game.time;
             this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
-                { memory: { role: 'claimer', source: source.pos, home: this.room.name } });
+                { memory: { role: 'claimer', source: source.pos, home: this.room.name, target: source.room.name } });
         }
     }
 };
