@@ -123,6 +123,7 @@ StructureController.prototype.remoteMining = function () {
             console.log("Spawning claimer for room: " + source.pos.roomName);
             console.log("Spawn Creep? ", this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
                 { memory: { role: 'claimer', source: source.pos, home: this.room.name, target: source.pos.roomName } }));
+            break;
         }
     }
 };
