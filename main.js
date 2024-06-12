@@ -773,15 +773,12 @@ function haulerCreep(creep) {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
             }
         }) : [];
-        if (spawns.length > 0) {
-            if (creep.transfer(spawns[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(spawns[0]);
-                return;
-            }
-        }
-        if (extensions.length > 0) {
-            if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(extensions[0]);
+        let targets = targets.concat(spawns, extensions);
+        // sort by distance to target
+        targets.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+        if (targets.length > 0) {
+            if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(targets[0]);
                 return;
             }
         }
