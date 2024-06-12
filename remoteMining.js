@@ -97,7 +97,7 @@ StructureController.prototype.remoteMining = function () {
         }
         if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
             // if controller is reserved and above 4000 ticks, return
-            let controller = source.room.controller;
+            let controller = source.room.controller ? source.room.controller : undefined;
             if (controller && controller.ticksToDowngrade > 4000) {
                 return;
             }
