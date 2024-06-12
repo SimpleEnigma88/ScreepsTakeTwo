@@ -95,6 +95,7 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
             break;
         }
+        console.log("Claimers: " + claimersForSource.length + " MAX_CLAIMERS: " + MAX_CLAIMERS + " Energy: " + this.room.energyAvailable + " Source: " + source.pos.roomName);
         if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
