@@ -95,17 +95,9 @@ StructureController.prototype.remoteMining = function () {
                 { memory: { role: 'remoteHauler', source: source.pos, home: this.room.name } });
             break;
         }
-        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable > 750) {
+        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
-            if (source) {
-                if (source.room && source.room.controller) {
-                    controller = source.room.controller;
-                    if (controller && controller.ticksToDowngrade > 4000) {
-                        return;
-                    }
-                }
-            }
             if (source) {
                 if (!source.room) {
                     // No vision in this room, skip this source or spawn a scout
