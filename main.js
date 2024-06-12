@@ -1239,7 +1239,7 @@ module.exports.loop = function () {
                 creep.remoteHauler();
             }
             if (creep.memory.role == 'claimer') {
-                Creep.remoteClaim();
+                creep.remoteClaim();
             }
         }
 
