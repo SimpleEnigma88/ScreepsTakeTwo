@@ -99,6 +99,7 @@ StructureController.prototype.remoteMining = function () {
         if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
+            console.log("Source: " + source);
             if (source) {
                 console.log("Source is defined: " + source.pos.roomName);
                 if (!source.room) {
@@ -114,6 +115,10 @@ StructureController.prototype.remoteMining = function () {
                         return;
                     }
                 }
+            }
+            else {
+                console.log("Source is not defined: " + source);
+                return;
             }
             let newName = 'Claimer - ' + Game.time;
             console.log("Spawning claimer for room: " + source.pos.roomName);
