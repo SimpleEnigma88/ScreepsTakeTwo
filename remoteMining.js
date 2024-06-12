@@ -106,7 +106,7 @@ StructureController.prototype.remoteMining = function () {
                     console.log("No vision in room: " + source.pos.roomName);
                     continue;
                 }
-                if (source.room.controller) {
+                if (source.room && source.room.controller) {
                     console.log("Controller is defined: " + source.room.controller);
                     controller = source.room.controller;
                     if (controller && controller.ticksToDowngrade > 4000) {
