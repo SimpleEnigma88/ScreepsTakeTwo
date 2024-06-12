@@ -773,7 +773,9 @@ function haulerCreep(creep) {
                 return structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 250;
             }
         }) : [];
-        let targets = targets.concat(spawns, extensions);
+        // Combine spawns and extension into one array
+        let targets = [];
+        targets = targets.concat(spawns, extensions);
         // sort by distance to target
         targets.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
         if (targets.length > 0) {
