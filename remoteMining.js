@@ -100,20 +100,25 @@ StructureController.prototype.remoteMining = function () {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
             if (source) {
+                console.log("Source is defined: " + source.pos.roomName);
                 if (!source.room) {
+                    console.log("No vision in room: " + source.pos.roomName);
                     // No vision in this room, skip this source or spawn a scout
                     return;
                 }
                 if (source.room.controller) {
+                    console.log("Controller is defined: " + source.room.controller);
                     controller = source.room.controller;
                     if (controller && controller.ticksToDowngrade > 4000) {
+                        console.log("Controller is reserved and above 4000 ticks: " + controller.ticksToDowngrade);
                         return;
                     }
                 }
             }
             let newName = 'Claimer - ' + Game.time;
-            this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
-                { memory: { role: 'claimer', source: source.pos, home: this.room.name, target: source.room.name } });
+            console.log("Spawning claimer for room: " + source.pos.roomName);
+            console.log("Spawn Creep? ", this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
+                { memory: { role: 'claimer', source: source.pos, home: this.room.name, target: source.room.name } }));
         }
     }
 };
