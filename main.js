@@ -7,6 +7,9 @@ function exploreAdjacentRooms(creep) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
         return;
     }
+    if (Memory.rooms.length > 8) {
+        return;
+    }
 
     // Add current room information to Memory.rooms, sources and controller info.
     if (Memory.rooms == undefined) {
