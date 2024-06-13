@@ -87,11 +87,13 @@ function exploreAdjacentRooms(creep) {
 // Find and shoot any hostile creeps in the room with each tower present
 StructureTower.prototype.run = function () {
     let hostile = this.room.find(FIND_HOSTILE_CREEPS);
-    let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
+    let damagedStructures = this.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return structure.hits < structure.hitsMax;
         }
     });
+    // sort by lowest hits
+    damagedStructures.sort((a, b) => a.hits - b.hits);
     let damagedCreep = tower.pos.findClosestByRange(FIND_MY_CREEPS, {
         filter: (creep) => {
             return creep.hits < creep.hitsMax;
