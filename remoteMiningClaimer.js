@@ -40,7 +40,7 @@ Creep.prototype.remoteClaim = function () {
     }
     const controller = this.room.controller ? this.room.controller : null;
     if (controller) {
-        if (controller.sign && controller.sign.time < Game.time - 1000) {
+        if (controller.sign && controller.sign.time > Game.time - 1000) {
             return;
         }
         this.signControllerWithQuote();
