@@ -85,10 +85,26 @@ function exploreAdjacentRooms(creep) {
 }
 
 // Find and shoot any hostile creeps in the room with each tower present
-StructureTower.prototype.defendRoom = function () {
+StructureTower.prototype.run = function () {
     let hostile = this.room.find(FIND_HOSTILE_CREEPS);
+    let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return structure.hits < structure.hitsMax;
+        }
+    });
+    let damagedCreep = tower.pos.findClosestByRange(FIND_MY_CREEPS, {
+        filter: (creep) => {
+            return creep.hits < creep.hitsMax;
+        }
+    });
     if (hostile.length > 0) {
         this.attack(hostile[0]);
+    }
+    else if (closestDamagedStructure) {
+        tower.repair(closestDamagedStructure);
+    }
+    else if (damagedCreep) {
+        tower.heal(damagedCreep);
     }
 };
 
@@ -1022,15 +1038,8 @@ module.exports.loop = function () {
         });
         for (let i = 0; i < towers.length; i++) {
             tower = towers[i];
-            tower.defendRoom();
-            let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return structure.hits < structure.hitsMax;
-                }
-            });
-            if (closestDamagedStructure) {
-                tower.repair(closestDamagedStructure);
-            }
+            tower.run();
+
         }
         let room = Game.rooms[roomName];
         if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
