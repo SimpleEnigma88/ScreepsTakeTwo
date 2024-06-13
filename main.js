@@ -1136,7 +1136,7 @@ module.exports.loop = function () {
 
         }
         let readyToSpawn = Game.time % 3 == 0
-            && spawns[0].room.energyAvailable >= spawns[i].room.energyCapacityAvailable * .5
+            && spawns[0].room.energyAvailable >= spawns[0].room.energyCapacityAvailable * .5
             ? true : false;
         console.log('Ready to spawn: ' + readyToSpawn);
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
