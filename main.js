@@ -1136,24 +1136,24 @@ module.exports.loop = function () {
 
         }
         let readyToSpawn = Game.time % 3 == 0
-            && spawns[0].energyAvailable >= spawns[0].energyCapacityAvailable * .5
+            && spawns[i].room.energyAvailable >= spawns[i].room.energyCapacityAvailable * .5
             ? true : false;
         console.log('Ready to spawn: ' + readyToSpawn);
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
         if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
             var newName = 'Miner - ' + Game.time;
-            spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
+            spawns[i].spawnCreep([MOVE, WORK, CARRY], newName,
                 { memory: { role: 'miner', home: roomName } });
         }
         else if (readyToSpawn && dropMiners.length < 1 && spawns.length > 0) {
             var newName = 'DropMiner - ' + Game.time;
-            spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
+            spawns[i].spawnCreep([MOVE, WORK, WORK], newName,
                 { memory: { role: 'dropMiner', home: roomName } });
         }
         // If there are no scouts and there is a spawn, spawn a new scout
         else if (readyToSpawn && scouts && scouts.length < 1 && spawns.length > 0) {
             var newName = 'Scout - ' + Game.time;
-            spawns[0].spawnCreep([MOVE], newName,
+            spawns[i].spawnCreep([MOVE], newName,
                 { memory: { role: 'scout', home: roomName } });
         }
         else if (readyToSpawn && Game.rooms[roomName].controller &&
