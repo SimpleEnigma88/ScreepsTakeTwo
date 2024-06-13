@@ -1,15 +1,17 @@
 const doctorWhoQuotes = [
-    "I am and always will be the optimist. The hoper of far-flung hopes and the dreamer of improbable dreams.",
     "The universe is big. It's vast and complicated and ridiculous.",
     "In 900 years of time and space, I've never met anyone who wasn't important.",
     "You want weapons? We're in a library! Books! The best weapons in the world!",
-    "Some people live more in 20 years than others do in 80. It's not the time that matters, it's the person.",
+    "Some people live more in 20 years than others do in 80.",
     "We're all stories, in the end. Just make it a good one, eh?",
-    "The way I see it, every life is a pile of good things and bad things. The good things don't always soften the bad things, but vice versa, the bad things don't always spoil the good things and make them unimportant.",
-    "You know when grown-ups tell you everything's going to be fine, and you think they're probably lying to make you feel better?",
-    "There's a lot of things you need to get across this universe. Warp drive... wormhole refractors... You know the thing you need most of all? You need a hand to hold.",
     "I am definitely a madman with a box.",
-
+    "900 years of time and space, and I've never been slapped by someone's mother.",
+    "I'm the Doctor. I'm a Time Lord. I'm from the planet Gallifrey in the Constellation of Kasterborous.",
+    "Scared is super power. It's your super power. There is danger in this room and guess what? It's you.",
+    "Never cruel or cowardly. Never give up, never give in.",
+    "I'm not a hero. I really am just a madman with a box.",
+    "I am and always will be the optimist. The hoper of far-flung hopes, the dreamer of improbable dreams.",
+    "It's more like a big ball of wibbly-wobbly, timey-wimey... stuff.",
     // Add more quotes here
 ];
 
