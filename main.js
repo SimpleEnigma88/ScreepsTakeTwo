@@ -1141,6 +1141,7 @@ module.exports.loop = function () {
             if (Game.time % 3 != 0) {
                 readyToSpawn = false;
             }
+        }
             console.log('Ready to spawn: ' + readyToSpawn);
             // If there are no miners and there is a spawn, spawn a new miner with minimal body
             if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
