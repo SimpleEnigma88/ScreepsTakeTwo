@@ -18,10 +18,10 @@ function getRandomDoctorWhoQuote() {
     return doctorWhoQuotes[randomIndex];
 }
 
-function signControllerWithQuote(controller) {
+Creep.prototype.signControllerWithQuote = function () {
     const quote = getRandomDoctorWhoQuote();
-    controller.sign(quote);
-}
+    this.signController(quote);
+};
 
 
 Creep.prototype.remoteClaim = function () {
@@ -40,7 +40,6 @@ Creep.prototype.remoteClaim = function () {
     const controller = this.room.controller;
     if (this && controller) {
         if (this.pos.inRangeTo(controller, 1)) {
-            signControllerWithQuote(controller);
         } else {
             this.moveTo(controller);
         }
