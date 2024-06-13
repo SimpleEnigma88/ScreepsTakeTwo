@@ -119,9 +119,10 @@ StructureController.prototype.remoteMining = function () {
                 console.log("Source is not defined: " + source);
                 continue;
             }
+            let body = Game.rooms[source.pos.roomName].energyAvailable < 1300 ? [MOVE, CLAIM] : [MOVE, CLAIM, MOVE, CLAIM];
             let newName = 'Claimer - ' + Game.time;
             console.log("Spawning claimer for room: " + source.pos.roomName);
-            console.log("Spawn Creep? ", this.room.find(FIND_MY_SPAWNS)[0].spawnCreep([MOVE, CLAIM], newName,
+            console.log("Spawn Creep? ", this.room.find(FIND_MY_SPAWNS)[0].spawnCreep(body, newName,
                 { memory: { role: 'claimer', source: source.pos, home: this.room.name, target: source.pos.roomName } }));
             break;
         }
