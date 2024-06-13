@@ -102,11 +102,11 @@ StructureTower.prototype.run = function () {
     if (hostile.length > 0) {
         this.attack(hostile[0]);
     }
-    else if (closestDamagedStructure) {
-        tower.repair(closestDamagedStructure);
-    }
     else if (damagedCreep) {
         tower.heal(damagedCreep);
+    }
+    else if (damagedStructures) {
+        tower.repair(damagedStructures);
     }
 };
 
