@@ -105,7 +105,7 @@ StructureTower.prototype.run = function () {
     else if (damagedCreep) {
         tower.heal(damagedCreep);
     }
-    else if (damagedStructures) {
+    else if (Game.time % 5 === 0 && damagedStructures) {
         tower.repair(damagedStructures[0]);
     }
 };
