@@ -65,7 +65,7 @@ StructureController.prototype.remoteMining = function () {
         let sourceCount = roomSourcesInRoom.length;
         // For each source, spawn a dropMiner and a hauler
         let body = [MOVE, WORK, WORK];
-        let readyToSpawn = source.room.energyAvailable >= source.room.energyCapacityAvailable * 0.5;
+        let readyToSpawn = this.room.energyAvailable >= this.room.energyCapacityAvailable * 0.5;
         if (readyToSpawn) {
             if (Game.time % 3 != 0) {
                 readyToSpawn = false;
