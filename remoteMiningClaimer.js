@@ -20,7 +20,7 @@ function getRandomDoctorWhoQuote() {
 
 Creep.prototype.signControllerWithQuote = function () {
     const quote = getRandomDoctorWhoQuote();
-    this.signController(quote);
+    this.signController(this.room.controller, quote);
 };
 
 
@@ -28,7 +28,8 @@ Creep.prototype.remoteClaim = function () {
     // If the creep is not in the target room, go there
     if (this.room.name != this.memory.target) {
         this.moveTo(new RoomPosition(25, 25, this.memory.target));
-    } else {
+    }
+    else {
         // reserve the controller for mining purposes
         let controller = this.room.controller;
         if (controller) {
