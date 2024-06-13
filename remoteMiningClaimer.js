@@ -38,11 +38,8 @@ Creep.prototype.remoteClaim = function () {
         }
     }
     const controller = this.room.controller;
-    if (this && controller) {
-        if (this.pos.inRangeTo(controller, 1)) {
-        } else {
-            this.moveTo(controller);
-        }
+    if (controller && controller.sign && controller.sign.time < Gamepad.time - 1000) {
+        this.signControllerWithQuote();
     }
 };
 
