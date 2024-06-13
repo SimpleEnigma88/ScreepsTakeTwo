@@ -244,13 +244,15 @@ Creep.prototype.remoteHauler = function () {
         //         this.moveTo(extensions[0]);
         //     }
         // }
+
+        // TODO - take out false clause after energy situation is cleaned up.
         let spawn = this.room.find(FIND_MY_SPAWNS)[0];
-        if (spawnContainers.length > 0) {
+        if (false && spawnContainers.length > 0) {
             if (this.transfer(spawnContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(spawnContainers[0]);
             }
         }
-        else if (controllerContainers.length > 0 /* && this.pos.getRangeTo(controllerContainers[0]) < this.pos.getRangeTo(spawn) */) {
+        else if (false && controllerContainers.length > 0 /* && this.pos.getRangeTo(controllerContainers[0]) < this.pos.getRangeTo(spawn) */) {
             if (this.transfer(controllerContainers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 this.moveTo(controllerContainers[0]);
             }
