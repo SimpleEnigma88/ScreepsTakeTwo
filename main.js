@@ -1021,11 +1021,8 @@ module.exports.loop = function () {
             }
         });
         for (let i = 0; i < towers.length; i++) {
-            let tower = towers[i];
-            let closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-            if (closestHostile) {
-                tower.attack(closestHostile);
-            }
+            tower = towers[i];
+            tower.defendRoom();
             let closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return structure.hits < structure.hitsMax;
