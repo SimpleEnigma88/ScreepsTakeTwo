@@ -1141,134 +1141,134 @@ module.exports.loop = function () {
             if (Game.time % 3 != 0) {
                 readyToSpawn = false;
             }
-        console.log('Ready to spawn: ' + readyToSpawn);
-        // If there are no miners and there is a spawn, spawn a new miner with minimal body
-        if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
-            var newName = 'Miner - ' + Game.time;
-            spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
-                { memory: { role: 'miner', home: roomName } });
-        }
-        else if (readyToSpawn && dropMiners.length < 1 && spawns.length > 0) {
-            var newName = 'DropMiner - ' + Game.time;
-            spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
-                { memory: { role: 'dropMiner', home: roomName } });
-        }
-        // If there are no scouts and there is a spawn, spawn a new scout
-        else if (readyToSpawn && scouts && scouts.length < 1 && spawns.length > 0) {
-            var newName = 'Scout - ' + Game.time;
-            spawns[0].spawnCreep([MOVE], newName,
-                { memory: { role: 'scout', home: roomName } });
-        }
-        else if (readyToSpawn && Game.rooms[roomName].controller &&
-            Game.rooms[roomName].controller.my &&
-            dropMiners.length < accessPoints &&
-            miners.length > dropMiners.length &&
-            dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1) {
-            body = [MOVE, WORK, WORK];
-            let cost = 250;
-            while (cost + 250 < room.energyAvailable) {
-                body.push(MOVE);
-                body.push(WORK);
-                body.push(WORK);
-                cost += 250;
-                // break after # of work parts is >= 5
-                if (body.length > 6) {
-                    break;
-                }
+            console.log('Ready to spawn: ' + readyToSpawn);
+            // If there are no miners and there is a spawn, spawn a new miner with minimal body
+            if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
+                var newName = 'Miner - ' + Game.time;
+                spawns[0].spawnCreep([MOVE, WORK, CARRY], newName,
+                    { memory: { role: 'miner', home: roomName } });
             }
-            var newName = 'DropMiner - ' + Game.time;
-            spawns[0].spawnCreep(body, newName,
-                { memory: { role: 'dropMiner', home: roomName } });
-        }
-        else if (readyToSpawn && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && Game.rooms[roomName].controller.level > 1 && haulers.length < MAX_HAULERS && spawns.length > 0) {
-            let body = [MOVE, CARRY, MOVE, CARRY];
-            let cost = 200;
-            while (cost + 100 < room.energyAvailable) {
-                body.push(MOVE);
-                body.push(CARRY);
-                cost += 100;
+            else if (readyToSpawn && dropMiners.length < 1 && spawns.length > 0) {
+                var newName = 'DropMiner - ' + Game.time;
+                spawns[0].spawnCreep([MOVE, WORK, WORK], newName,
+                    { memory: { role: 'dropMiner', home: roomName } });
             }
-            var newName = 'Hauler - ' + Game.time;
-            spawns[0].spawnCreep(body, newName,
-                { memory: { role: 'hauler', home: roomName } });
-        }
-        else if (readyToSpawn && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0 && room.energyAvailable >= room.energyCapacityAvailable * 0.5) {
-            body = [MOVE, MOVE, CARRY, WORK];
-            if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
+            // If there are no scouts and there is a spawn, spawn a new scout
+            else if (readyToSpawn && scouts && scouts.length < 1 && spawns.length > 0) {
+                var newName = 'Scout - ' + Game.time;
+                spawns[0].spawnCreep([MOVE], newName,
+                    { memory: { role: 'scout', home: roomName } });
+            }
+            else if (readyToSpawn && Game.rooms[roomName].controller &&
+                Game.rooms[roomName].controller.my &&
+                dropMiners.length < accessPoints &&
+                miners.length > dropMiners.length &&
+                dropMiners.length < NUM_CREEPS['dropMiner'][Game.rooms[roomName].controller.level - 1] + 1) {
+                body = [MOVE, WORK, WORK];
                 let cost = 250;
                 while (cost + 250 < room.energyAvailable) {
                     body.push(MOVE);
-                    body.push(MOVE);
-                    body.push(CARRY);
+                    body.push(WORK);
                     body.push(WORK);
                     cost += 250;
+                    // break after # of work parts is >= 5
+                    if (body.length > 6) {
+                        break;
+                    }
+                }
+                var newName = 'DropMiner - ' + Game.time;
+                spawns[0].spawnCreep(body, newName,
+                    { memory: { role: 'dropMiner', home: roomName } });
+            }
+            else if (readyToSpawn && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && Game.rooms[roomName].controller.level > 1 && haulers.length < MAX_HAULERS && spawns.length > 0) {
+                let body = [MOVE, CARRY, MOVE, CARRY];
+                let cost = 200;
+                while (cost + 100 < room.energyAvailable) {
+                    body.push(MOVE);
+                    body.push(CARRY);
+                    cost += 100;
+                }
+                var newName = 'Hauler - ' + Game.time;
+                spawns[0].spawnCreep(body, newName,
+                    { memory: { role: 'hauler', home: roomName } });
+            }
+            else if (readyToSpawn && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my && miners.length < NUM_CREEPS['miner'][Game.rooms[roomName].controller.level - 1] && spawns.length > 0 && room.energyAvailable >= room.energyCapacityAvailable * 0.5) {
+                body = [MOVE, MOVE, CARRY, WORK];
+                if (Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
+                    let cost = 250;
+                    while (cost + 250 < room.energyAvailable) {
+                        body.push(MOVE);
+                        body.push(MOVE);
+                        body.push(CARRY);
+                        body.push(WORK);
+                        cost += 250;
+                    }
+                }
+                var newName = 'Miner - ' + Game.time;
+                spawns[0].spawnCreep(body, newName,
+                    { memory: { role: 'miner', home: roomName } });
+            }
+
+            // Find containers withing range 2 of the controller
+            if (room.controller) {
+                let controllerContainers = room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+                    filter: (structure) => {
+                        return structure.structureType == STRUCTURE_CONTAINER;
+                    }
+                });
+                // For each container, check the surroundings and move any creeps found TODO
+                for (let i = 0; i < controllerContainers.length; i++) {
                 }
             }
-            var newName = 'Miner - ' + Game.time;
-            spawns[0].spawnCreep(body, newName,
-                { memory: { role: 'miner', home: roomName } });
-        }
-
-        // Find containers withing range 2 of the controller
-        if (room.controller) {
-            let controllerContainers = room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-                filter: (structure) => {
-                    return structure.structureType == STRUCTURE_CONTAINER;
+            if (room.controller && room.controller.my) {
+                //room.controller.remoteMining();
+            }
+            // Remove non-existent spawns from memory
+            for (let name in Memory.spawns) {
+                if (!Game.spawns[name]) {
+                    delete Memory.spawns[name];
                 }
-            });
-            // For each container, check the surroundings and move any creeps found TODO
-            for (let i = 0; i < controllerContainers.length; i++) {
             }
-        }
-        if (room.controller && room.controller.my) {
-            //room.controller.remoteMining();
-        }
-        // Remove non-existent spawns from memory
-        for (let name in Memory.spawns) {
-            if (!Game.spawns[name]) {
-                delete Memory.spawns[name];
+            // Remove dead creeps from memory
+            for (let name in Memory.creeps) {
+                if (!Game.creeps[name]) {
+                    delete Memory.creeps[name];
+                }
             }
-        }
-        // Remove dead creeps from memory
-        for (let name in Memory.creeps) {
-            if (!Game.creeps[name]) {
-                delete Memory.creeps[name];
+            for (let creepName in Game.creeps) {
+                let creep = Game.creeps[creepName];
+                if (creep.memory.role == 'scout') {
+                    exploreAdjacentRooms(creep);
+                }
+                if (creep.memory.role == 'miner') {
+                    minerCreep(creep);
+                }
+                if (creep.memory.role == 'dropMiner') {
+                    dropCreep(creep);
+                }
+                if (creep.memory.role == 'hauler') {
+                    haulerCreep(creep);
+                }
+                if (creep.memory.role == 'remoteDropMiner') {
+                    creep.remoteDropMiner();
+                }
+                if (creep.memory.role == 'remoteHauler') {
+                    creep.remoteHauler();
+                }
+                if (creep.memory.role == 'claimer') {
+                    creep.remoteClaim();
+                }
             }
-        }
-        for (let creepName in Game.creeps) {
-            let creep = Game.creeps[creepName];
-            if (creep.memory.role == 'scout') {
-                exploreAdjacentRooms(creep);
-            }
-            if (creep.memory.role == 'miner') {
-                minerCreep(creep);
-            }
-            if (creep.memory.role == 'dropMiner') {
-                dropCreep(creep);
-            }
-            if (creep.memory.role == 'hauler') {
-                haulerCreep(creep);
-            }
-            if (creep.memory.role == 'remoteDropMiner') {
-                creep.remoteDropMiner();
-            }
-            if (creep.memory.role == 'remoteHauler') {
-                creep.remoteHauler();
-            }
-            if (creep.memory.role == 'claimer') {
-                creep.remoteClaim();
-            }
-        }
 
+        };
+        // If game world is not simulation
+        // if (Game.shard !== 'sim') {
+        //     // if bucket == 10,000, generate pixel
+        //     if (Game.cpu.bucket == 10000) {
+        //         Game.cpu.generatePixel();
+        //     }
+        // }
+
+        const cpuUsedEnd = Game.cpu.getUsed();
+        console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
     };
-    // If game world is not simulation
-    // if (Game.shard !== 'sim') {
-    //     // if bucket == 10,000, generate pixel
-    //     if (Game.cpu.bucket == 10000) {
-    //         Game.cpu.generatePixel();
-    //     }
-    // }
-
-    const cpuUsedEnd = Game.cpu.getUsed();
-    console.log('CPU Used: ' + (cpuUsedEnd - cpuUsedStart));
-};
