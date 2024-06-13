@@ -94,9 +94,9 @@ StructureTower.prototype.run = function () {
     });
     // sort by lowest hits
     damagedStructures.sort((a, b) => a.hits - b.hits);
-    let damagedCreep = tower.pos.findClosestByRange(FIND_MY_CREEPS, {
-        filter: (creep) => {
-            return creep.hits < creep.hitsMax;
+    let damagedCreep = tower.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+        filter: (t) => {
+            return t.hits < t.hitsMax;
         }
     });
     if (hostile.length > 0) {
