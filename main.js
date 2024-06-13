@@ -1135,9 +1135,12 @@ module.exports.loop = function () {
             }
 
         }
-        let readyToSpawn = Game.time % 3 == 0
-            && spawns[0].room.energyAvailable >= spawns[0].room.energyCapacityAvailable * .5
-            ? true : false;
+        // Check if room has energyAvailable of at leat 50% of energyCapacityAvailable
+        let readyToSpawn = room.energyAvailable >= room.energyCapacityAvailable * 0.5;
+        if (readyToSpawn) {
+            if (Game.time % 3 != 0) {
+                readyToSpawn = false;
+            }
         console.log('Ready to spawn: ' + readyToSpawn);
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
         if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
