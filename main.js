@@ -312,6 +312,9 @@ function repairOnTheFly(creep) {
             return structure.hits < structure.hitsMax;
         }
     });
+    // Filter out Walls and Ramparts
+    structures = structures.filter(structure => structure.structureType != STRUCTURE_WALL && structure.structureType != STRUCTURE_RAMPART);
+
     if (structures.length > 0) {
         creep.repair(structures[0]);
     }
