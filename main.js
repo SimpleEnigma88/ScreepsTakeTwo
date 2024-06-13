@@ -1135,7 +1135,10 @@ module.exports.loop = function () {
             }
 
         }
-        let readyToSpawn = Game.time % 3 == 0 ? true : false;
+        let readyToSpawn = Game.time % 3 == 0 
+        && spawns[0].energyAvailable >= spawns[0].energyCapacityAvailable * .5 
+        ? true : false;
+
         // If there are no miners and there is a spawn, spawn a new miner with minimal body
         if (readyToSpawn && dropMiners.length < 1 && miners.length < 1 && spawns.length > 0) {
             var newName = 'Miner - ' + Game.time;
