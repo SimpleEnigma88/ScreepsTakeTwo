@@ -128,7 +128,7 @@ StructureController.prototype.remoteMining = function () {
                 console.log("Source is not defined: " + source);
                 continue;
             }
-            console.log("Energy Capacity: " + Game.rooms[source.pos.roomName].energyCapacityAvailable + " Source: " + source.pos.roomName + " Energy Available: " + this.room.energyAvailable + " Source Count: " + sourceCount + " Room Sources: " + roomSourcesInRoom.length + " Room Sources Array: " + roomSourcesArray.length + " Room Sources: " + roomSources)
+            console.log("Energy Capacity: " + Game.rooms[source.pos.roomName].energyCapacityAvailable);
             let body = Game.rooms[source.pos.roomName].energyCapacityAvailable < 1300 ? [MOVE, CLAIM] : [MOVE, CLAIM, MOVE, CLAIM];
             let newName = 'Claimer - ' + Game.time;
             console.log("Spawning claimer for room: " + source.pos.roomName);
