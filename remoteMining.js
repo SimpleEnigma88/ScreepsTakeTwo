@@ -48,6 +48,8 @@ StructureController.prototype.remoteMining = function () {
     let claimersForSource = [];
     for (let i = 0; i < sources.length; i++) {
         source = sources[i];
+
+        console.log("Energy Capacity: " + Game.rooms[source.pos.roomName].energyCapacityAvailable);
         // Find the number of sources for the room this one is in.
         let sourcesInRoom = _.filter(sources, (source) => source.pos.roomName == source.pos.roomName);
 
