@@ -1,4 +1,4 @@
-const MAX_REMOTES = 4; // Number of remote sources to mine
+const MAX_REMOTES = 6; // Number of remote sources to mine
 const MAX_CLAIMERS = 1;
 const MAX_DROPMINERS = 1;
 const MAX_HAULERS = 5;
@@ -24,11 +24,9 @@ StructureController.prototype.remoteMining = function () {
     }
     // Cut the total number of sources to MAX_REMOTES
     sources = sources.slice(0, MAX_REMOTES);
+    // Sort sources by distance, closest first
+    sources.sort((a, b) => this.pos.getRangeTo(a) - this.pos.getRangeTo(b));
 
-    // Output each source of sources, show id and room it's located in.
-    for (let i = 0; i < sources.length; i++) {
-    }
-    // Sort sources by path length between home room controller and the remote source
     // Find all creeps with the role 'remoteDropMiner'
     let dropMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteDropMiner');
     let haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'remoteHauler');
@@ -53,9 +51,16 @@ StructureController.prototype.remoteMining = function () {
 
 
         // Find the number of dropMiners and haulers for this source
-        dropMinersForSource = _.filter(dropMiners, (creep) => creep.memory.source.x == source.pos.x && creep.memory.source.y == source.pos.y && creep.memory.role == 'remoteDropMiner');
-        haulersForSource = _.filter(haulers, (creep) => creep.memory.source.roomName == source.pos.roomName && creep.memory.role == 'remoteHauler');
-        claimersForSource = _.filter(claimers, (creep) => creep.memory.source.roomName == source.pos.roomName && creep.memory.role == 'claimer');
+        dropMinersForSource = _.filter(dropMiners, (creep) =>
+            creep.memory.source.x == source.pos.x &&
+            creep.memory.source.y == source.pos.y &&
+            creep.memory.role == 'remoteDropMiner');
+        haulersForSource = _.filter(haulers, (creep) =>
+            creep.memory.source.roomName == source.pos.roomName &&
+            creep.memory.role == 'remoteHauler');
+        claimersForSource = _.filter(claimers, (creep) =>
+            creep.memory.source.roomName == source.pos.roomName &&
+            creep.memory.role == 'claimer');
         // Find the number of non-wall tiles around the source
 
         // Use creep memory of source info to check room for number of sources
