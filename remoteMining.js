@@ -48,7 +48,6 @@ StructureController.prototype.remoteMining = function () {
     let claimersForSource = [];
     for (let i = 0; i < sources.length; i++) {
         source = sources[i];
-
         // Find the number of sources for the room this one is in.
         let sourcesInRoom = _.filter(sources, (source) => source.pos.roomName == source.pos.roomName);
 
@@ -106,7 +105,7 @@ StructureController.prototype.remoteMining = function () {
             break;
         }
         console.log("Claimers: " + claimersForSource.length + " MAX_CLAIMERS: " + MAX_CLAIMERS + " Energy: " + this.room.energyAvailable + " Source: " + source.pos.roomName + " Energy Available: " + this.room.energyAvailable + " Source Count: " + sourceCount + " Room Sources: " + roomSourcesInRoom.length + " Room Sources Array: " + roomSourcesArray.length + " Room Sources: " + roomSources);
-        if (source.pos.findClosestByRange(FIND_MY_SPAWNS).length && claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
+        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
             console.log("Source: " + source);
@@ -129,7 +128,6 @@ StructureController.prototype.remoteMining = function () {
                 console.log("Source is not defined: " + source);
                 continue;
             }
-            console.log("Energy Capacity: " + Game.rooms[source.pos.roomName].energyCapacityAvailable);
             let body = Game.rooms[source.pos.roomName].energyCapacityAvailable < 1300 ? [MOVE, CLAIM] : [MOVE, CLAIM, MOVE, CLAIM];
             let newName = 'Claimer - ' + Game.time;
             console.log("Spawning claimer for room: " + source.pos.roomName);
