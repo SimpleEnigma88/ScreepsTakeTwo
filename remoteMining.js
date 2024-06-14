@@ -106,7 +106,7 @@ StructureController.prototype.remoteMining = function () {
             break;
         }
         console.log("Claimers: " + claimersForSource.length + " MAX_CLAIMERS: " + MAX_CLAIMERS + " Energy: " + this.room.energyAvailable + " Source: " + source.pos.roomName + " Energy Available: " + this.room.energyAvailable + " Source Count: " + sourceCount + " Room Sources: " + roomSourcesInRoom.length + " Room Sources Array: " + roomSourcesArray.length + " Room Sources: " + roomSources);
-        if (claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
+        if (source.room.find(FIND_MY_SPAWNS).length && claimersForSource.length < MAX_CLAIMERS && this.room.energyAvailable >= 650) {
             let controller = {};
             // if controller is reserved and above 4000 ticks, return
             console.log("Source: " + source);
